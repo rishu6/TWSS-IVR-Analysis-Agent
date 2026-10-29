@@ -114,7 +114,7 @@ def overview(calls):
             group['missed'] += call['status'] == 'MISSED'
             group['customer_missed'] += call['status']=='MISSED' and has_department_flow(call)
         dids[call['did']] = dids.get(call['did'], 0) + 1
-    return {'total': len(inbound), **statuses, 'customer_missed':customer_missed,
+    return {'unique_callers':len({c.caller_e164 for c in calls if c.direction=='inbound' and c.caller_e164}), 'total': len(inbound), **statuses, 'customer_missed':customer_missed,
             'missed_without_department':statuses['MISSED']-customer_missed, 'answer_rate': statuses['ANSWERED'] / len(inbound) if inbound else None,
             'average_response_seconds': sum(responses) / len(responses) if responses else None,
             'response_sample_size': len(responses),
@@ -175,11 +175,12 @@ def department_report(calls):
             continue
         call = row.projection
         for department in call['departments']:
-            group = groups.setdefault(department, dict(department=department, primary_calls=0, involved_calls=0, answered_primary=0))
+            group = groups.setdefault(department, dict(department=department, primary_calls=0, involved_calls=0, answered_primary=0, missed_primary=0))
             group['involved_calls'] += 1
             if department == call['primary_department']:
                 group['primary_calls'] += 1
                 group['answered_primary'] += call['status'] == 'ANSWERED'
+                group['missed_primary'] += call['status'] == 'MISSED'
     return sorted(groups.values(), key=lambda g: g['department'])
 
 

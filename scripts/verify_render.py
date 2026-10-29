@@ -43,6 +43,15 @@ def verify():
             for row in response.json()['items']:
                 assert not row['caller'] or row['caller'].startswith('••••')
                 assert all(lead['display_name']=='Restricted lead' for lead in row['candidates'])
+            overview=client.get('/api/v1/metrics/overview')
+            assert overview.status_code==200
+            metric=overview.json()
+            assert 0<=metric['unique_callers']<=metric['total']
+            assert metric['customer_missed']+metric['missed_without_department']==metric['MISSED']
+            departments=client.get('/api/v1/reports/departments')
+            assert departments.status_code==200
+            assert all(0<=row['missed_primary']<=row['primary_calls'] for row in departments.json()['items'])
+            print({'live_dashboard_metrics':'passed'})
             health=client.get('/api/v1/integrations/health')
             assert health.status_code==200
             print({'provider_states':{key:health.json().get(key) for key in ('acefone','leadsquared','system')}})

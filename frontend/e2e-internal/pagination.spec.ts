@@ -12,7 +12,7 @@ test('shared page sizes across tabs',async({page})=>{
   await page.getByLabel('New password · at least 12 characters').fill('fixture-replacement-password');
   await page.getByLabel('Confirm new password').fill('fixture-replacement-password');
   await page.getByRole('button',{name:'Save password and continue'}).click();
-  await expect(page.getByRole('heading',{name:'Every call, connected.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Analysis dashboard'})).toBeVisible();
   await page.goto('/flows?page=2');
   await page.getByLabel('Rows per page',{exact:true}).selectOption('all');
   await expect(page).not.toHaveURL(/[?&]page=2/);

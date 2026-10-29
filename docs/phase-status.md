@@ -223,3 +223,9 @@ Validation: existing 101 backend tests plus four phone-matching regressions pass
 Removed the call drawer's notice boxes, repeated CRM caveats, sync notes and technical call/lead IDs. Call detail, journey and CRM endpoints now resolve the current saved lead owner through the LeadSquared user directory, so the drawer shows a name instead of the stored identifier. Unknown directory entries display “Owner name unavailable.” Existing Viewer lead-name masking is preserved.
 
 Validation: three owner-directory tests (including all three detail endpoints, current-owner changes and missing names), twelve frontend tests and the production frontend build passed.
+
+### Executive analysis dashboard — 29 October 2026
+
+Replaced the overview with six clickable KPIs, hourly/daily stacked call traffic (bar/line toggle), an answer-coverage donut, busiest-hour and agent highlights, sortable department volume/outcome bars, and the existing answered/missed/best/worst agent tabs. KPI and department counts open filtered inbound call lists; customer-missed links retain the department-routing requirement. Support and Vadant remain excluded from best/worst rankings. Charts and percentages use actual filtered counts; other missed calls are separate from missed department calls, avoiding double counting. Backend additions provide distinct known caller numbers and actual missed department totals instead of deriving misses as total minus answered.
+
+Verified empty data, sparse-hour zero filling, India-date aggregation, outcome totals, both themes, mobile width, chart controls and call drilldowns with synthetic data. 107 backend tests, 16 frontend tests and a Chrome end-to-end dashboard test passed; the production build passed. Browser previews are local synthetic artifacts and are not deployed data.

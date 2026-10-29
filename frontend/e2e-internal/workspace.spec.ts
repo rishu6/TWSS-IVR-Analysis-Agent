@@ -15,7 +15,7 @@ test('built internal app enforces personal login and first password change',asyn
   await page.getByLabel('New password · at least 12 characters').fill('fixture-replacement-password');
   await page.getByLabel('Confirm new password').fill('fixture-replacement-password');
   await page.getByRole('button',{name:'Save password and continue'}).click();
-  await expect(page.getByRole('heading',{name:'Every call, connected.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Analysis dashboard'})).toBeVisible();
   await expect(page.getByText('Four attempts. One answered call.')).toHaveCount(0);
   await expect(page.getByText('INTERNAL WORKSPACE',{exact:true})).toBeVisible();
   await expect(page.getByRole('link',{name:'Call explorer',exact:true})).toHaveCount(0);

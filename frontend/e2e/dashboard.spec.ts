@@ -5,7 +5,7 @@ test('manager explores a four-agent call, CRM duplicates and exports', async ({ 
   page.on('pageerror', error=>errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', {name:'Enter demo workspace'}).click();
-  await expect(page.getByRole('heading', {name:'Every call, connected.'})).toBeVisible();
+  await expect(page.getByRole('heading', {name:'Analysis dashboard'})).toBeVisible();
   await expect(page.getByText('3 answered / 8 inbound')).toBeVisible();
   await page.screenshot({path:test.info().outputPath('overview.png'),fullPage:true});
   await page.getByRole('button', {name:'Explore journey'}).click();
