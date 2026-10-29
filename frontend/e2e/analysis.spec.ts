@@ -30,5 +30,12 @@ test('executive dashboard charts, themes and filtered drilldowns',async({page})=
   await expect(page).toHaveURL(/outcome=MISSED/);
   await expect(page).toHaveURL(/missed_department=true/);
   await expect(page.getByRole('heading',{name:'Answered and missed call journeys'})).toBeVisible();
+  await page.goto('/');
+  const rate=page.locator('.dash-kpi').filter({hasText:'Answer rate'});
+  await expect(rate.locator(':scope > strong')).toHaveText((metrics.answer_rate*100).toFixed(1)+'%');
+  await expect(rate).toContainText(`${metrics.department_answered} of ${metrics.department_calls} department calls`);
+  await rate.click();
+  await expect(page).toHaveURL(/department_selected=true/);
+  await expect(page).toHaveURL(/outcome=ANSWERED/);
   expect(errors).toEqual([]);
 });

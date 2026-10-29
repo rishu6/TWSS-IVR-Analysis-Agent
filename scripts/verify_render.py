@@ -47,6 +47,9 @@ def verify():
             assert overview.status_code==200
             metric=overview.json()
             assert 0<=metric['unique_callers']<=metric['total']
+            assert 0<=metric['department_answered']<=metric['department_calls']<=metric['total']
+            expected=metric['department_answered']/metric['department_calls'] if metric['department_calls'] else None
+            assert metric['answer_rate']==expected
             assert metric['customer_missed']+metric['missed_without_department']==metric['MISSED']
             departments=client.get('/api/v1/reports/departments')
             assert departments.status_code==200

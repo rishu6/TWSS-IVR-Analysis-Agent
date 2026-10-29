@@ -23,7 +23,10 @@ def test_dashboard_counts_logical_inbound_calls(client):
     assert result['ABANDONED'] == 1
     assert result['IN_PROGRESS'] == 1
     assert result['UNKNOWN'] == 1
-    assert result['answer_rate'] == 3/8
+    assert result['department_calls'] == 6
+    assert result['department_answered'] == 3
+    assert result['answer_rate'] == 3/6
+    assert result['overall_answer_rate'] == 3/8
     assert result['hourly'][0]['at'] == '2026-10-27T04:30:00+00:00'  # 10:00 IST hour boundary
     assert result['hourly'][0]['total'] == 5
 

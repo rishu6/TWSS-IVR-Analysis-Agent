@@ -12,9 +12,9 @@ describe('dashboard call totals',()=>{
     const rows=callTrend([hour('2026-10-28T18:30:00Z',2,1,1),hour('2026-10-29T03:30:00Z',3,2,1),hour('2026-10-30T18:30:00Z',1,1,0)],true);
     expect(rows.map(r=>[r.at,r.total])).toEqual([['2026-10-29',5],['2026-10-30',0],['2026-10-31',1]]);
   });
-  it('keeps missed department calls inside total missed, not as an extra outcome',()=>{
-    const mix=outcomeMix({total:10,ANSWERED:4,MISSED:5,customer_missed:2,missed_without_department:3} as Metrics);
-    expect(mix.map(r=>r.value)).toEqual([4,2,3,1]);expect(mix.reduce((n,r)=>n+r.value,0)).toBe(10);
+  it('uses only department calls for the answer coverage chart',()=>{
+    const mix=outcomeMix({total:10,ANSWERED:5,MISSED:4,department_calls:6,department_answered:4,customer_missed:1,missed_without_department:3} as Metrics);
+    expect(mix.map(r=>r.value)).toEqual([4,1,1]);expect(mix.reduce((n,r)=>n+r.value,0)).toBe(6);
   });
   it('handles no activity',()=>expect(callTrend([],false)).toEqual([]));
 });

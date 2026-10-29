@@ -26,8 +26,7 @@ export function callTrend(hourly:Metrics['hourly'],daily:boolean):TrendPoint[]{
   return result;
 }
 export function outcomeMix(m:Metrics){return [
-  {name:'Answered',value:m.ANSWERED,color:'var(--dash-answer)',filter:'answered'},
-  {name:'Missed after department',value:m.customer_missed,color:'var(--dash-missed)',filter:'department-missed'},
-  {name:'Other missed calls',value:m.missed_without_department,color:'var(--dash-before)',filter:'missed'},
-  {name:'Other / in progress',value:Math.max(0,m.total-m.ANSWERED-m.MISSED),color:'var(--dash-other)',filter:'other'}
+  {name:'Answered',value:m.department_answered,color:'var(--dash-answer)'},
+  {name:'Missed',value:m.customer_missed,color:'var(--dash-missed)'},
+  {name:'Other / in progress',value:Math.max(0,m.department_calls-m.department_answered-m.customer_missed),color:'var(--dash-other)'}
 ];}

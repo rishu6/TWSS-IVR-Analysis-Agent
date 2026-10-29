@@ -81,10 +81,11 @@ def leadsquared_analytics(f=Depends(filters),department_selected:bool=True,
 
 
 @router.get('/calls')
-def calls(f=Depends(filters), missed_department:bool=False, show_all:bool=False, page: int = Query(1, ge=1), page_size: int = Query(25, ge=1, le=100),
+def calls(f=Depends(filters), missed_department:bool=False, department_selected:bool=False, show_all:bool=False, page: int = Query(1, ge=1), page_size: int = Query(25, ge=1, le=100),
           user=Depends(principal), db=Depends(session_db)):
-    if missed_department:
-        selected=[c for c in db.scalars(filtered_query(**{**f,'outcome':'MISSED'})) if has_department_flow(c.projection)]
+    if missed_department or department_selected:
+        scope={**f,'outcome':'MISSED'} if missed_department else f
+        selected=[c for c in db.scalars(filtered_query(**scope)) if has_department_flow(c.projection)]
         offset=0 if show_all else (page-1)*page_size
         return {'items':[present(c,user.role) for c in (selected if show_all else selected[offset:offset+page_size])],
                 'total':len(selected),'page':page,'page_size':page_size,
@@ -97,7 +98,12 @@ def calls(f=Depends(filters), missed_department:bool=False, show_all:bool=False,
 
 
 @router.get('/calls-summary')
-def calls_summary(f=Depends(filters),user=Depends(principal),db=Depends(session_db)):
+def calls_summary(f=Depends(filters),department_selected:bool=False,user=Depends(principal),db=Depends(session_db)):
+    if department_selected:
+        selected=[c for c in db.scalars(filtered_query(**{**f,'outcome':None})) if has_department_flow(c.projection)]
+        counts={}
+        for call in selected:counts[call.final_status]=counts.get(call.final_status,0)+1
+        return {'total':len(selected),'outcomes':counts,'missed_department':counts.get('MISSED',0)}
     stmt=filtered_query(**{**f,'outcome':None}).order_by(None).with_only_columns(Call.final_status).subquery()
     counts=dict(db.execute(select(stmt.c.final_status,func.count()).group_by(stmt.c.final_status)).all())
     department_missed=sum(has_department_flow(c.projection) for c in db.scalars(filtered_query(**{**f,'outcome':'MISSED'})))

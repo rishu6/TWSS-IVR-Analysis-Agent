@@ -103,6 +103,8 @@ def overview(calls):
     responses = [c['first_response_seconds'] for c in inbound if c['first_response_seconds'] is not None]
     durations = [c['duration_seconds'] for c in inbound if c['duration_seconds'] is not None]
     customer_missed=sum(c['status']=='MISSED' and has_department_flow(c) for c in inbound)
+    department_calls=[c for c in inbound if has_department_flow(c)]
+    department_answered=sum(c['status']=='ANSWERED' for c in department_calls)
     hours, dids = {}, {}
     for call in inbound:
         if call['started_at']:
@@ -115,14 +117,17 @@ def overview(calls):
             group['customer_missed'] += call['status']=='MISSED' and has_department_flow(call)
         dids[call['did']] = dids.get(call['did'], 0) + 1
     return {'unique_callers':len({c.caller_e164 for c in calls if c.direction=='inbound' and c.caller_e164}), 'total': len(inbound), **statuses, 'customer_missed':customer_missed,
-            'missed_without_department':statuses['MISSED']-customer_missed, 'answer_rate': statuses['ANSWERED'] / len(inbound) if inbound else None,
+            'missed_without_department':statuses['MISSED']-customer_missed,
+            'department_calls':len(department_calls),'department_answered':department_answered,
+            'answer_rate':department_answered/len(department_calls) if department_calls else None,
+            'overall_answer_rate':statuses['ANSWERED']/len(inbound) if inbound else None,
             'average_response_seconds': sum(responses) / len(responses) if responses else None,
             'response_sample_size': len(responses),
             'average_duration_seconds': sum(durations) / len(durations) if durations else None,
             'duration_sample_size': len(durations), 'hourly': sorted(hours.values(), key=lambda h: h['at']),
             'by_did': [{'did': did, 'total': total} for did, total in dids.items()],
             'missing_attempt_coverage': sum(not c['attempts_available'] for c in inbound),
-            'definitions': {'answer_rate': 'Answered inbound logical calls / all filtered inbound logical calls',
+            'definitions': {'answer_rate': 'Answered inbound calls with recorded department routing / all filtered inbound calls with recorded department routing',
                             'missed': 'All inbound calls with a provider missed outcome, including calls without department routing; not agent attempts',
                             'customer_missed': 'Missed inbound logical calls with a named Department event in the recorded flow. Excludes calls with only a reporting/DID department label. Counts calls, not unique phone numbers. Department routing is the available evidence; exact keypad selection is not verified.',
                             'response': 'Mean first explicit answer minus inbound start, only where both are known',
