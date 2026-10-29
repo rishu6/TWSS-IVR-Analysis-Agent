@@ -235,3 +235,9 @@ Verified empty data, sparse-hour zero filling, India-date aggregation, outcome t
 The dashboard answer rate now equals answered inbound department calls divided by all inbound calls with a named department event, within the selected filters. Both numerator and denominator exclude callers without recorded department routing, including calls with only a reporting label. The card shows the two department counts, and the outcome donut uses the same scope. A zero denominator returns null (“—”). The answer-rate drilldown and its outcome tabs retain the department-selection filter; reset filters clears it. Overall inbound totals remain available separately.
 
 Validation: 109 backend tests, 16 frontend tests, production build and the Chrome dashboard/drilldown test passed. Regression cases cover repeated calls, no selection, labels without routing evidence, zero department calls and filtered pagination/counts.
+
+### Independent filters per analytical tab — 30 October 2026
+
+Sidebar navigation now restores the destination tab's own query instead of copying the current tab's filters into every destination. The workspace remembers each tab during navigation, while the current URL still supports refresh, direct links and browser history. Filter forms remount per route so unsaved dates/departments do not spill into another tab. Rows-per-page preferences are stored per route. Reset/clear affects only the active tab; intentional dashboard-to-call drilldowns still pass their selected scope.
+
+Validation: 16 frontend tests and production build passed. Two Chrome tests passed, covering all six analytical tabs, independent date/department/status/search filters, per-tab resets, rows-per-page persistence and existing department-only dashboard drilldowns. No backend or provider API changes were required.

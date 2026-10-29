@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-test('shared page sizes across tabs',async({page})=>{
+test('independent page sizes across tabs',async({page})=>{
   await page.goto('/');
   await expect(page).toHaveTitle(/TWSS IVR/);
   await expect(page.getByRole('heading',{name:'Sign in to your account'})).toBeVisible();
@@ -20,12 +20,15 @@ test('shared page sizes across tabs',async({page})=>{
   await expect(page.getByRole('button',{name:'Next',exact:true})).toBeDisabled();
   await page.getByLabel('Rows per page',{exact:true}).selectOption('50');
   await page.goto('/crm');
-  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('50');
+  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('10');
+  await page.getByLabel('Rows per page',{exact:true}).selectOption('25');
   await page.reload();
-  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('50');
+  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('25');
   await page.goto('/admin');
-  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('50');
+  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('10');
   await page.getByLabel('Rows per page',{exact:true}).selectOption('100');
   await page.goto('/live');
-  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('100');
+  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('10');
+  await page.goto('/flows');
+  await expect(page.getByLabel('Rows per page',{exact:true})).toHaveValue('50');
 });
