@@ -43,6 +43,8 @@ class LiveSync:
     def __init__(self, settings, sessions):
         self.settings, self.sessions = settings,sessions
         self.lock = threading.Lock()
+        self.crm_lock = threading.Lock()
+        self.separate_crm = settings.database_url.startswith(('postgres://','postgresql://','postgresql+'))
 
     def state(self, provider, status, message=None, details=None):
         with self.sessions.begin() as db:
@@ -59,8 +61,9 @@ class LiveSync:
             return {'status':'ALREADY_RUNNING'}
         try:
             credentials = load_credentials(self.settings.integrations_file)
-            from .owner_directory import refresh_owner_directory
-            refresh_owner_directory(self.sessions,credentials,client_factory=LiveLeadSquaredClient)
+            if not self.separate_crm:
+                from .owner_directory import refresh_owner_directory
+                refresh_owner_directory(self.sessions,credentials,client_factory=LiveLeadSquaredClient)
             from .history import process_history
             if process_history(self,credentials):
                 with self.sessions() as db:
@@ -69,7 +72,8 @@ class LiveSync:
                 self.enrich_calls(bool(last),last)
             else:
                 self.telephony(credentials)
-                self.crm(credentials)
+                if not self.separate_crm:
+                    self.crm(credentials)
             from .maintenance import maintain
             maintain(self.settings,self.sessions)
             self.state('system','HEALTHY','Sync and maintenance cycle completed')
@@ -80,6 +84,22 @@ class LiveSync:
             return {'status':'ERROR'}
         finally:
             self.lock.release()
+
+    def run_crm(self):
+        """Cloud CRM indexing must never hold up the next telephony poll."""
+        if not self.crm_lock.acquire(blocking=False):
+            return {'status':'ALREADY_RUNNING'}
+        try:
+            credentials=load_credentials(self.settings.integrations_file)
+            from .owner_directory import refresh_owner_directory
+            refresh_owner_directory(self.sessions,credentials,client_factory=LiveLeadSquaredClient)
+            self.crm(credentials)
+            return {'status':'FINISHED'}
+        except Exception:
+            self.state('leadsquared','ERROR','CRM refresh interrupted; retries automatically')
+            return {'status':'ERROR'}
+        finally:
+            self.crm_lock.release()
 
     def telephony(self, credentials):
         self.state('acefone','SYNCING')
@@ -191,9 +211,14 @@ class LiveSync:
         self.enrich_calls(complete,last_success)
 
     def enrich_calls(self,complete,last_success):
-        with self.sessions.begin() as db:
-            state=db.get(IntegrationState,'leadsquared')
-            for call in db.scalars(select(Call).where(Call.provider=='acefone')):
+        with self.sessions() as db:
+            call_ids=list(db.scalars(select(Call.id).where(Call.provider=='acefone')))
+        for call_id in call_ids:
+            # Keep locks short so CRM projection writes cannot overwrite newer CDR data.
+            with self.sessions.begin() as db:
+                call=db.scalar(select(Call).where(Call.id==call_id).with_for_update())
+                if call is None: continue
+                state=db.get(IntegrationState,'leadsquared')
                 previous=call.projection.get('crm',{})
                 stale=bool(state and state.status!='HEALTHY')
                 if (complete and previous.get('synced_at')==last_success.isoformat() and previous.get('stale')==stale

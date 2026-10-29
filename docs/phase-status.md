@@ -203,3 +203,9 @@ Deployed to https://twss-ivr.onrender.com using the user's Render workspace and 
 Imported snapshot: 1,745 calls, 206,243 leads, 1 staff account, 1,305 call/lead matches, 1,434 call participants and the retained CRM index progress. Live HTTPS login and customer-data masking were verified with an ephemeral Viewer removed afterward; admin/audit/export/history-write restrictions remained enforced. Chrome verified real sign-in rendering. Render API confirmed Free plan; readiness and live frontend checks passed. Provider synchronization is enabled, with Acefone HEALTHY and CRM refresh resuming.
 
 Current validation: 99 backend tests and 12 frontend tests passed, production frontend build passed, real PostgreSQL migrations/import/reports and live HTTPS/Chrome checks passed. Free-plan idle sleep/usage limits still apply, and independent production load/security certification is not claimed. See docs/render-deployment.md.
+
+### Cloud sync follow-up — 29 October 2026
+
+Live diagnosis confirmed a free-instance shutdown/restart and a long interval between successful Acefone jobs while the sequential CRM index was running. PostgreSQL deployments now poll Acefone independently of the CRM worker, retaining the local SQLite serial behavior. CRM call projections use short per-call row locks to avoid overwriting newer CDR evidence. Scheduler failures retry instead of terminating the task. The banner shows provider sync state and warns after five minutes without a successful import; a browser connection no longer implies fresh provider data. Render Free still pauses all background work while asleep.
+
+Validation: 101 backend tests (including a blocked-CRM/nonblocking-call regression and scheduler retry test), 12 frontend tests and the production frontend build passed.

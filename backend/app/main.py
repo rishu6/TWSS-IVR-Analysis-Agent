@@ -18,24 +18,26 @@ def create_app(settings=None):
     settings.validate()
     @asynccontextmanager
     async def lifespan(app):
-        task = None
+        tasks = []
         if settings.mode == 'internal' and settings.auto_sync:
             from .live_sync import LiveSync
+            from .scheduler import repeat_sync
             app.state.live_sync = LiveSync(settings,app.state.sessions)
-            async def schedule():
-                while True:
-                    await asyncio.to_thread(app.state.live_sync.run)
-                    with app.state.sessions() as db:
-                        state=db.get(IntegrationState,'leadsquared')
-                        indexing=bool(state and state.status=='INDEXING')
-                        pending_history=db.scalar(select(SyncJob.id).where(SyncJob.kind=='history',SyncJob.status.in_(['QUEUED','RUNNING'])).limit(1))
-                    await asyncio.sleep(2 if indexing or pending_history else settings.sync_seconds)
-            task=asyncio.create_task(schedule())
+            worker=app.state.live_sync
+            def delay():
+                with app.state.sessions() as db:
+                    state=db.get(IntegrationState,'leadsquared')
+                    indexing=bool(state and state.status=='INDEXING')
+                    pending=db.scalar(select(SyncJob.id).where(SyncJob.kind=='history',SyncJob.status.in_(['QUEUED','RUNNING'])).limit(1))
+                return 2 if pending or (indexing and not worker.separate_crm) else settings.sync_seconds
+            tasks.append(asyncio.create_task(repeat_sync(worker.run,delay)))
+            if worker.separate_crm:
+                tasks.append(asyncio.create_task(repeat_sync(worker.run_crm,lambda: settings.sync_seconds)))
         yield
-        if task:
-            task.cancel()
-            try:await task
-            except asyncio.CancelledError:pass
+        for task in tasks: task.cancel()
+        for task in tasks:
+            try: await task
+            except asyncio.CancelledError: pass
         app.state.engine.dispose()
 
     app = FastAPI(title='TWSS IVR', docs_url=None, redoc_url=None, openapi_url=None,lifespan=lifespan)
