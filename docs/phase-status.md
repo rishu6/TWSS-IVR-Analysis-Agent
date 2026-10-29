@@ -253,3 +253,9 @@ Validation: 16 frontend tests, production build and three Chrome checks passed (
 Reconciliation for 29 October IST found 16 answered inbound calls, of which 13 had a recorded department event. The department-only checkbox, rather than missing captured calls, excluded the other three. LeadSquared insights now defaults to all answered calls with this optional checkbox off. Enabling it labels the total “Answered department calls” instead of implying an account-wide answered total. No department routing was inferred for the three records without that event. The Overview department-based answer rate is unchanged.
 
 Validation: 16 frontend tests, production build and the Chrome LeadSquared regression passed. Browser assertions verify the default API request includes department_selected=false, all-status override/reset, department-only toggle and labels. Counts were checked against the live database without displaying caller records.
+
+### Weekly call patterns tab — 30 October 2026
+
+Added Call patterns with busiest weekday, busiest hour and peak weekday/hour highlights, seven-day volume bars, a selectable weekday hourly chart and an interactive 7×24 heatmap. Counts use the existing filtered inbound hourly report and Asia/Kolkata time, including all recorded call outcomes by default. Ties are retained, empty data has no invented winner, and records without start times are excluded with a count when applicable. This week uses Monday through today; Last week uses the previous complete Monday–Sunday week. Date, department, call status and search filters remain independent from other tabs.
+
+Validation: 20 frontend tests, production build and a Chrome test passed. Coverage includes India-day boundaries, multiple weeks, tied leaders, aggregate consistency, hour/weekday focus, calendar-week shortcuts, empty results, independent navigation, both themes and mobile width. No external API endpoints or database changes were introduced.
