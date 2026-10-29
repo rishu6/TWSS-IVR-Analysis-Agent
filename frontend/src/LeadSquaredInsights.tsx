@@ -12,6 +12,8 @@ export function LeadSquaredInsights({onOpen}:{onOpen:(id:string)=>void}){
   const size=usePageSize();
   const [params,setParams]=useSearchParams();const page=Number(params.get('page')||1);
   const filter=new URLSearchParams(params);filter.delete('page');filter.delete('page_size');filter.delete('show_all');filter.delete('flow_view');
+  if(!filter.get('outcome'))filter.set('outcome','ANSWERED');
+  else if(filter.get('outcome')==='ALL')filter.delete('outcome');
   const selected=params.get('department_selected')!=='false';filter.set('department_selected',String(selected));
   const query=useQuery({queryKey:['ls-analytics',filter.toString(),page,size],queryFn:()=>api<Report>(`/reports/leadsquared?${filter}&page=${page}&${pageSizeQuery(size)}`),refetchInterval:30000});
   const summary=query.data?.summary;
@@ -23,12 +25,12 @@ export function LeadSquaredInsights({onOpen}:{onOpen:(id:string)=>void}){
       <p className="muted">Each phone number counts as one caller, even when they call more than once.</p>
       <div className="button-row">
         <label className="crm-scope-toggle"><input type="checkbox" checked={selected} onChange={e=>{const next=new URLSearchParams(params);next.set('department_selected',String(e.target.checked));next.delete('page');setParams(next);}}/>Only callers who reached a department</label>
-        <button className="secondary" onClick={()=>{const next=new URLSearchParams(params);next.set('outcome','ANSWERED');next.set('department_selected','true');next.delete('page');setParams(next);}}>Show answered department calls</button>
+        {(filter.get('outcome')!=='ANSWERED'||!selected)&&<button className="secondary" onClick={()=>{const next=new URLSearchParams(params);next.set('outcome','ANSWERED');next.set('department_selected','true');next.delete('page');setParams(next);}}>Show answered department calls</button>}
       </div>
     </section>
     {query.error&&<div className="notice error" role="alert">{query.error.message}</div>}
     {query.isPending?<p className="loading">Loading callers…</p>:summary&&<>
-      <div className="kpi-grid crm-summary">{[['Calls','total_calls'],['Unique callers','unique_callers'],['Found in LeadSquared','matched_callers'],['Not found in last check','no_match_callers'],['Still being checked','unresolved_callers'],['Repeat calls','repeat_calls']].map(([title,key])=><section className="panel kpi" key={key}><div className="kpi-top">{title}</div><strong>{summary[key]}</strong></section>)}</div>
+      <div className="kpi-grid crm-summary">{[[filter.get('outcome')==='ANSWERED'?'Answered calls':'Calls','total_calls'],['Unique callers','unique_callers'],['Found in LeadSquared','matched_callers'],['Not found in last check','no_match_callers'],['Still being checked','unresolved_callers'],['Repeat calls','repeat_calls']].map(([title,key])=><section className="panel kpi" key={key}><div className="kpi-top">{title}</div><strong>{summary[key]}</strong></section>)}</div>
       <div className="crm-statline"><span>Already a lead before calling <strong>{summary.existing_before_call}</strong></span><span>Lead created after calling <strong>{summary.created_after_call}</strong></span></div>
       {summary.unresolved_callers>0&&<p className="muted" role="status">We’re checking {summary.unresolved_callers} callers. Their leads may already exist. Results update automatically.</p>}
       <AgentRanking agents={query.data?.ranking_items} rankingAgents={query.data?.ranking_items} rankingsOnly/>

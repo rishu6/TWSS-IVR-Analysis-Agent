@@ -25,7 +25,9 @@ test('each analytical tab restores its own filters and page size',async({page})=
     await page.getByLabel('Department',{exact:true}).selectOption(department);
     if(name!=='Live calls')await page.getByLabel('Call status',{exact:true}).selectOption(status);
     await page.getByRole('button',{name:'Apply filters',exact:true}).click();
+    await expect.poll(()=>new URL(page.url()).searchParams.get('department'),{message:name}).toBe(department);
     await page.getByLabel('Search calls').fill(name);
+    await expect.poll(()=>new URL(page.url()).searchParams.get('q'),{message:name}).toBe(name);
     saved.set(name,new URL(page.url()).search);
   }
   for(const [name,department,status] of tabs){

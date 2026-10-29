@@ -241,3 +241,9 @@ Validation: 109 backend tests, 16 frontend tests, production build and the Chrom
 Sidebar navigation now restores the destination tab's own query instead of copying the current tab's filters into every destination. The workspace remembers each tab during navigation, while the current URL still supports refresh, direct links and browser history. Filter forms remount per route so unsaved dates/departments do not spill into another tab. Rows-per-page preferences are stored per route. Reset/clear affects only the active tab; intentional dashboard-to-call drilldowns still pass their selected scope.
 
 Validation: 16 frontend tests and production build passed. Two Chrome tests passed, covering all six analytical tabs, independent date/department/status/search filters, per-tab resets, rows-per-page persistence and existing department-only dashboard drilldowns. No backend or provider API changes were required.
+
+### Answered calls by default in LeadSquared insights — 30 October 2026
+
+LeadSquared insights now defaults to answered calls while retaining the department-only default. The shared status selector, summary totals, caller rows and report requests use that default consistently. The total is labelled “Answered calls.” Explicit other statuses and “All statuses” remain available; reset/clear returns to the answered default. The shortcut is hidden while answered department calls are already selected. Filter drafts synchronize from actual applied fields rather than unrelated query changes.
+
+Validation: 16 frontend tests, production build and three Chrome checks passed (answered summary against the API, explicit all-status selection/reset/refresh, independent tabs and dashboard drilldowns). Browser checks were isolated as needed to respect the preview server's request budget. No provider APIs or backend contracts changed.
