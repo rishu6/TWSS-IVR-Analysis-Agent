@@ -1,23 +1,33 @@
 import {test,expect} from '@playwright/test';
 test.use({baseURL:'http://127.0.0.1:8003'});
-test('LeadSquared defaults to answered department calls and respects explicit statuses',async({page})=>{
+test('LeadSquared defaults to all answered calls and respects explicit statuses',async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');
   await page.getByRole('button',{name:'Enter demo workspace'}).click();
+  const request=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/v1/reports/leadsquared'&&r.status()===200);
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'LeadSquared insights',exact:true}).click();
+  expect(new URL((await request).url()).searchParams.get('department_selected')).toBe('false');
   await expect(page.getByLabel('Call status',{exact:true})).toHaveValue('ANSWERED');
-  const expected=await (await page.request.get('/api/v1/reports/leadsquared?department_selected=true&outcome=ANSWERED')).json();
+  await expect(page.getByRole('checkbox',{name:'Only callers who reached a department'})).not.toBeChecked();
+  const expected=await (await page.request.get('/api/v1/reports/leadsquared?department_selected=false&outcome=ANSWERED')).json();
   const card=page.locator('.crm-summary .kpi').filter({hasText:'Answered calls'});
   await expect(card.locator(':scope > strong')).toHaveText(String(expected.summary.total_calls));
-  await expect(page.getByRole('button',{name:'Show answered department calls'})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Show answered calls'})).toHaveCount(0);
   await page.getByLabel('Call status',{exact:true}).selectOption('ALL');
   await page.getByRole('button',{name:'Apply filters',exact:true}).click();
-  const all=await (await page.request.get('/api/v1/reports/leadsquared?department_selected=true')).json();
+  const all=await (await page.request.get('/api/v1/reports/leadsquared?department_selected=false')).json();
   const calls=page.locator('.crm-summary .kpi').filter({has:page.getByText('Calls',{exact:true})});
   await expect(calls.locator(':scope > strong')).toHaveText(String(all.summary.total_calls));
-  await expect(page.getByRole('button',{name:'Show answered department calls'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Show answered calls'})).toBeVisible();
   await page.getByRole('button',{name:'Reset filters',exact:true}).click();
   await expect(page.getByLabel('Call status',{exact:true})).toHaveValue('ANSWERED');
+  await expect(card.locator(':scope > strong')).toHaveText(String(expected.summary.total_calls));
+  await page.getByRole('checkbox',{name:'Only callers who reached a department'}).click();
+  await expect(page.getByRole('checkbox',{name:'Only callers who reached a department'})).toBeChecked();
+  const scoped=await (await page.request.get('/api/v1/reports/leadsquared?department_selected=true&outcome=ANSWERED')).json();
+  await expect(page.locator('.crm-summary .kpi').filter({hasText:'Answered department calls'}).locator(':scope > strong')).toHaveText(String(scoped.summary.total_calls));
+  await page.getByRole('checkbox',{name:'Only callers who reached a department'}).click();
+  await expect(page.getByRole('checkbox',{name:'Only callers who reached a department'})).not.toBeChecked();
   await expect(card.locator(':scope > strong')).toHaveText(String(expected.summary.total_calls));
   await page.reload();
   await expect(page.getByLabel('Call status',{exact:true})).toHaveValue('ANSWERED');

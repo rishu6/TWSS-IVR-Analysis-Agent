@@ -247,3 +247,9 @@ Validation: 16 frontend tests and production build passed. Two Chrome tests pass
 LeadSquared insights now defaults to answered calls while retaining the department-only default. The shared status selector, summary totals, caller rows and report requests use that default consistently. The total is labelled “Answered calls.” Explicit other statuses and “All statuses” remain available; reset/clear returns to the answered default. The shortcut is hidden while answered department calls are already selected. Filter drafts synchronize from actual applied fields rather than unrelated query changes.
 
 Validation: 16 frontend tests, production build and three Chrome checks passed (answered summary against the API, explicit all-status selection/reset/refresh, independent tabs and dashboard drilldowns). Browser checks were isolated as needed to respect the preview server's request budget. No provider APIs or backend contracts changed.
+
+### All answered calls in LeadSquared insights — 30 October 2026
+
+Reconciliation for 29 October IST found 16 answered inbound calls, of which 13 had a recorded department event. The department-only checkbox, rather than missing captured calls, excluded the other three. LeadSquared insights now defaults to all answered calls with this optional checkbox off. Enabling it labels the total “Answered department calls” instead of implying an account-wide answered total. No department routing was inferred for the three records without that event. The Overview department-based answer rate is unchanged.
+
+Validation: 16 frontend tests, production build and the Chrome LeadSquared regression passed. Browser assertions verify the default API request includes department_selected=false, all-status override/reset, department-only toggle and labels. Counts were checked against the live database without displaying caller records.
