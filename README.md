@@ -38,6 +38,10 @@ The app creates its private SQLite database, runtime files and backups under `.r
 
 See [internal installation and operations](docs/internal-deployment.md) for staff accounts, department mappings, backups and recovery.
 
+## Render deployment
+
+See [Render Free + Neon Free deployment](docs/render-deployment.md) for cloud configuration and migration of an existing Mac installation. The free deployment needs a separate persistent PostgreSQL database; local SQLite files cannot survive Render Free restarts.
+
 ## Synthetic demo
 
 The demo uses fictional data and does not load provider credentials:

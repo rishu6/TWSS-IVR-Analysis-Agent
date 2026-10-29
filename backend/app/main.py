@@ -45,6 +45,8 @@ def create_app(settings=None):
 
     @app.middleware('http')
     async def protection(request: Request, call_next):
+        if settings.migration_pending and request.url.path!='/healthz':
+            return JSONResponse({'detail':'TWSS IVR is being set up. Please try again shortly.'},status_code=503)
         # Same-origin cookie requests require an explicit CSRF header for writes.
         if request.method in {'POST', 'PUT', 'PATCH', 'DELETE'}:
             origin = request.headers.get('origin')
@@ -56,6 +58,8 @@ def create_app(settings=None):
         while stamps and stamps[0] < now - 60:
             stamps.popleft()
         limit = 20 if key[1] else 240
+        if request.url.path=='/healthz' and request.method=='GET':
+            return await call_next(request)
         if len(stamps) >= limit:
             return JSONResponse({'detail': 'Rate limit exceeded'}, status_code=429, headers={'Retry-After': '60'})
         stamps.append(now)
@@ -64,6 +68,12 @@ def create_app(settings=None):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy'] = 'no-referrer'
         return response
+
+    @app.get('/healthz')
+    def readiness():
+        from sqlalchemy import text
+        with app.state.engine.connect() as connection:connection.execute(text('SELECT 1'))
+        return {'status':'ok'}
 
     app.include_router(auth.router)
     from .api import router

@@ -177,7 +177,7 @@ class AuditLog(Base):
 
 
 def database(url):
-    kwargs = {'connect_args': {'check_same_thread': False, 'timeout':30}} if url.startswith('sqlite') else {}
+    kwargs = {'connect_args': {'check_same_thread': False, 'timeout':30}} if url.startswith('sqlite') else {'pool_pre_ping':True,'pool_recycle':300}
     engine = create_engine(url, **kwargs)
     if url.startswith('sqlite'):
         @event.listens_for(engine, 'connect')

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: twss-ivr
+    runtime: docker
+    repo: https://github.com/rishu6/TWSS-IVR-Analysis-Agent
+    branch: main
+    region: singapore
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    numInstances: 1
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: APP_MODE
+        value: internal
+      - key: SECURE_COOKIES
+        value: "true"
+      - key: RUNTIME_DIRECTORY
+        value: /tmp/twss
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_PENDING
+        value: "true"
+      - key: AUTO_SYNC
+        value: "false"
+      - key: ACEFONE_API_TOKEN
+        sync: false
+      - key: LEADSQUARED_API_HOST
+        sync: false
+      - key: LEADSQUARED_ACCESS_KEY
+        sync: false
+      - key: LEADSQUARED_SECRET_KEY
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false

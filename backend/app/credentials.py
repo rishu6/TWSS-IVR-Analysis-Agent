@@ -22,6 +22,9 @@ def read_env(path):
 
 def load_credentials(path):
     path = Path(path)
+    names = ('ACEFONE_API_TOKEN', 'LEADSQUARED_API_HOST', 'LEADSQUARED_ACCESS_KEY', 'LEADSQUARED_SECRET_KEY')
+    if not path.exists() and all(os.getenv(key) for key in names):
+        return {key:os.environ[key] for key in names}
     if path.stat().st_mode & 0o077:
         raise ValueError('Credential file must be private (chmod 600)')
     values = read_env(path)

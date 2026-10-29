@@ -17,6 +17,8 @@ class Settings:
     sync_seconds: int = int(os.getenv('SYNC_INTERVAL_SECONDS', '60'))
     initial_sync_days: int = int(os.getenv('INITIAL_SYNC_DAYS', '3'))
     max_provider_pages: int = int(os.getenv('MAX_PROVIDER_PAGES', '1000'))
+    migration_pending: bool = os.getenv('MIGRATION_PENDING', 'false').lower() == 'true'
+    runtime_directory: str = os.getenv('RUNTIME_DIRECTORY', '.runtime')
     auto_sync: bool = os.getenv('AUTO_SYNC', 'true').lower() == 'true'
 
     def validate(self):
