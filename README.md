@@ -75,7 +75,7 @@ Stop and restart the fixture before running `pagination.spec.ts` instead of `wor
 
 ## Data and deployment boundaries
 
-The internal app binds to localhost. Uploading its source to GitHub does not publish the application or provide access to the running Mac. Shared hosting, HTTPS, SSO/MFA and production load certification require separate deployment work. Docker Compose definitions are included for future server work; container/PostgreSQL/Redis/Celery operation is not certified by the Mac-local checks.
+The Mac entrypoint binds to localhost. The cloud entrypoint is deployed at **https://twss-ivr.onrender.com** on Render Free with persistent Neon PostgreSQL data and HTTPS. It requires individual staff sign-in; credentials and customer records are not included in this repository. Free hosting can sleep when idle. Corporate SSO/MFA and production load certification remain separate work. The root Dockerfile has been deployed on Render; the separate Docker Compose/Redis/Celery setup remains unverified.
 
 - Exact provider ring-attempt counts and transfer links are not verified. The app distinguishes recorded events from unavailable evidence and does not infer a missed attempt from a dial alone.
 - LeadSquared matches indicate caller numbers found in the saved default-lead-type index. They do not prove call-activity logging, call-driven lead creation or historical stage/owner values.

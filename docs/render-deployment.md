@@ -25,7 +25,7 @@ The `render.yaml` Blueprint selects a **Free** Docker web service in Singapore, 
 
 1. Deploy with `MIGRATION_PENDING=true` and `AUTO_SYNC=false`. Readiness remains available while user routes show setup mode.
 2. Ensure the dedicated PostgreSQL database has been migrated to the current schema by the cloud startup.
-3. Run `.venv/bin/python scripts/migrate_to_postgres.py` locally. It creates a consistent private SQLite backup in `.runtime/render/`, imports records in dependency order inside one PostgreSQL transaction, verifies row counts and reseeds integer IDs. Browser sessions are omitted; staff password hashes and accounts are preserved. Existing destination call/lead records or unexpected staff accounts cause refusal rather than overwrite.
+3. Run `.venv/bin/python scripts/migrate_to_postgres.py` locally. It creates a consistent private SQLite backup in `.runtime/render/`, imports records with PostgreSQL COPY in dependency order inside one transaction, verifies row counts and reseeds integer IDs. Browser sessions are omitted; staff password hashes and accounts are preserved. Existing destination call/lead records or unexpected staff accounts cause refusal rather than overwrite.
 4. Validate imported counts and account login, then change `MIGRATION_PENDING=false`, `AUTO_SYNC=true` and redeploy. Existing Mac staff sign-in details remain valid; users sign in again on the new URL.
 5. Use the Render URL for staff activity after cutover. Retain the Mac database/backup for recovery; it is not deleted by migration.
 
@@ -38,3 +38,11 @@ Render Free can sleep after 15 minutes without inbound traffic; synchronization 
 Local SQLite backups remain on the Mac. The app's SQLite-file backup routine does not create PostgreSQL backups. Use the database provider's available recovery features and keep an off-service export appropriate to your data policy. No production availability or load certification is claimed.
 
 Official references: [Render Free](https://render.com/docs/free), [Blueprint reference](https://render.com/docs/blueprint-spec), [Render environment variables](https://render.com/docs/environment-variables), [Neon pricing](https://neon.com/pricing).
+
+## Verified live installation — 29 October 2026
+
+URL: **https://twss-ivr.onrender.com**. Render confirmed the service is on the Free plan, without a disk. The existing Mac snapshot was copied into Neon: 1,745 calls, 206,243 leads and one staff account, including historical call evidence, CRM matches and the resumable index generation. Staff password hashes and roles were compared directly with the snapshot and matched. Browser sessions were omitted. The imported database measured approximately 229 MB at verification. The Mac data/backup was retained.
+
+Live checks passed for HTTPS sign-in, Secure/HttpOnly cookies, role escalation prevention, Viewer data masking, CRM reports and denial of administrator/export access to the temporary Viewer. The temporary verification account was removed afterward. Chrome rendered the real sign-in screen and TWSS logo with no client errors. Acefone reported HEALTHY and the LeadSquared refresh resumed.
+
+Automatic deploys remain off. For future app changes, push the source and use Render's Manual Deploy, or deliberately enable autodeploy after reviewing your release process. The provider sync is enabled only while the free web instance is awake. The application has not been independently load/security certified.

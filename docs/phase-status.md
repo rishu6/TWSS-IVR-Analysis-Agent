@@ -195,3 +195,11 @@ Created a custom vector TWSS monogram and TWSS / IVR wordmark, replacing the wor
 Replaced the large palette menu with a compact two-button Light/Dark appearance switch. Light uses Corporate navy; Dark uses Soft charcoal. Earlier saved palettes migrate to their corresponding light/dark mode, preserving user preferences and larger text sizes. No API, authentication or stored-data changes were made.
 
 Validation: 12 frontend tests, production TypeScript/Vite build and full workspace Chrome browser check passed. Browser checks verify the TWSS logo, exactly two appearance buttons, preference persistence after reload, computed table font sizes and mobile layout. Synthetic light desktop and dark mobile screenshots were visually reviewed.
+
+## Live Render Free deployment — 2026-10-29
+
+Deployed to https://twss-ivr.onrender.com using the user's Render workspace and dedicated Neon Free PostgreSQL database. The user rejected paid hosting; no paid service or persistent disk was created. Existing Mac data and accounts were migrated from a consistent private SQLite snapshot using transactional PostgreSQL COPY with table-count checks and sequence reseeding. Old browser sessions were not copied. Password hashes/roles matched exactly after import. Source Mac data remains available for recovery.
+
+Imported snapshot: 1,745 calls, 206,243 leads, 1 staff account, 1,305 call/lead matches, 1,434 call participants and the retained CRM index progress. Live HTTPS login and customer-data masking were verified with an ephemeral Viewer removed afterward; admin/audit/export/history-write restrictions remained enforced. Chrome verified real sign-in rendering. Render API confirmed Free plan; readiness and live frontend checks passed. Provider synchronization is enabled, with Acefone HEALTHY and CRM refresh resuming.
+
+Current validation: 99 backend tests and 12 frontend tests passed, production frontend build passed, real PostgreSQL migrations/import/reports and live HTTPS/Chrome checks passed. Free-plan idle sleep/usage limits still apply, and independent production load/security certification is not claimed. See docs/render-deployment.md.
