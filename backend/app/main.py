@@ -33,6 +33,7 @@ def create_app(settings=None):
             tasks.append(asyncio.create_task(repeat_sync(worker.run,delay)))
             if worker.separate_crm:
                 tasks.append(asyncio.create_task(repeat_sync(worker.run_crm,lambda: settings.sync_seconds)))
+                tasks.append(asyncio.create_task(repeat_sync(worker.run_matches,lambda: settings.sync_seconds)))
         yield
         for task in tasks: task.cancel()
         for task in tasks:

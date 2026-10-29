@@ -44,6 +44,7 @@ class LiveSync:
         self.settings, self.sessions = settings,sessions
         self.lock = threading.Lock()
         self.crm_lock = threading.Lock()
+        self.match_lock = threading.Lock()
         self.separate_crm = settings.database_url.startswith(('postgres://','postgresql://','postgresql+'))
 
     def state(self, provider, status, message=None, details=None):
@@ -100,6 +101,56 @@ class LiveSync:
             return {'status':'ERROR'}
         finally:
             self.crm_lock.release()
+
+    def run_matches(self):
+        """Resolve recent unmatched callers without waiting for the full CRM scan."""
+        if not self.match_lock.acquire(blocking=False):return {'status':'ALREADY_RUNNING'}
+        client=None
+        try:
+            credentials=load_credentials(self.settings.integrations_file)
+            client=LiveLeadSquaredClient(credentials)
+            from .reports import has_department_flow
+            with self.sessions() as db:
+                calls=db.scalars(select(Call).where(Call.provider=='acefone').order_by(Call.started_at.desc())).all()
+                phones=[]
+                for call in calls:
+                    crm=call.projection.get('crm',{})
+                    checked=crm.get('phone_checked_at')
+                    if (call.caller_e164 and has_department_flow(call.projection) and not crm.get('candidates')
+                        and call.caller_e164 not in phones
+                        and (not checked or now()-datetime.fromisoformat(checked)>timedelta(minutes=15))):
+                        phones.append(call.caller_e164)
+                    if len(phones)==10:break
+            class PhoneLookup:
+                def lookup(self,phone):
+                    candidates=[normalized_lead(row) for row in client.phone_candidates(phone)]
+                    return [lead for lead in candidates if phone in lead['phones']]
+            checked=matched=failed=0
+            for phone in phones:
+                # Fetch outside a DB transaction; network retries must not hold call locks.
+                try:candidates=PhoneLookup().lookup(phone)
+                except (ProviderError,ValueError):
+                    failed+=1
+                    continue
+                checked+=1
+                matched+=bool(candidates)
+                with self.sessions.begin() as db:
+                    calls=db.scalars(select(Call).where(Call.caller_e164==phone).with_for_update()).all()
+                    class SavedLookup:
+                        def lookup(self,_):return candidates
+                    for call in calls:
+                        result=enrich(db,call,SavedLookup(),force=True)
+                        call.projection={**call.projection,'crm':{**result,'stale':False,
+                            'phone_checked_at':now().isoformat(),'matching_scope':'Default LeadSquared lead type'}}
+            self.state('leadsquared-matches','PARTIAL' if failed else 'HEALTHY','Caller phone checks completed',
+                {'checked_callers':checked,'matched_callers':matched,'failed_checks':failed})
+            return {'status':'FINISHED'}
+        except Exception:
+            self.state('leadsquared-matches','ERROR','Caller checks interrupted; retrying automatically')
+            return {'status':'ERROR'}
+        finally:
+            if client:client.close()
+            self.match_lock.release()
 
     def telephony(self, credentials):
         self.state('acefone','SYNCING')
@@ -220,6 +271,8 @@ class LiveSync:
                 if call is None: continue
                 state=db.get(IntegrationState,'leadsquared')
                 previous=call.projection.get('crm',{})
+                if previous.get('phone_checked_at') and (not last_success or datetime.fromisoformat(previous['phone_checked_at'])>last_success):
+                    continue  # A direct phone check is newer than the completed index.
                 stale=bool(state and state.status!='HEALTHY')
                 if (complete and previous.get('synced_at')==last_success.isoformat() and previous.get('stale')==stale
                     and previous.get('status') not in ('PENDING','ERROR')

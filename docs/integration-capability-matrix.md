@@ -45,3 +45,9 @@ No Acefone payload is represented as verified. Fixtures implement our **internal
 Provide the account's official CDR/history API contract (method, URL, auth, quotas, pagination, retention), enabled webhook trigger definitions and redacted payloads for: four sequential agent attempts, simultaneous rings, IVR exit, cross-department transfer, duplicate delivery and delayed hangup. Confirm root/leg IDs, event IDs, signature or equivalent authentication, timezone, individual missed-ring coverage and recording URL access/expiry. These are questions about availability, not assertions that the APIs support them.
 
 For LeadSquared obtain API host, phone field metadata/formats, object type scope, duplicate examples and read-only sandbox access. Never send credentials in chat. CDR history and basic CRM access are now verified. Detailed per-agent linkage, webhook authentication and recording playback still require this evidence; those capabilities remain disabled or unavailable.
+
+### Caller matching without waiting for full indexing
+
+LeadSquared's documented [Search Leads by Criteria](https://apidocs.leadsquared.com/search-by-lead-criteria/) supports `Leads.Get` with field criteria and `LIKE`. The cloud matcher searches both Phone and Mobile by suffix, reads all result pages (bounded at ten pages per field), and accepts only exact normalized full-number matches. Incomplete/failed searches remain pending and do not establish that a lead is missing. Checks are bounded to ten unmatched department callers per cycle, with a fifteen-minute retry window for completed checks. Custom object types remain outside the verified scope.
+
+Direct match results newer than the last complete index are retained. The report can also use a positive match already in the saved phone index immediately; it does not infer absence from an incomplete scan.

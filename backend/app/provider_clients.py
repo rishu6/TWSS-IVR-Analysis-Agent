@@ -116,5 +116,28 @@ class LiveLeadSquaredClient:
             raise ProviderError('Unexpected LeadSquared lead-list schema')
         return data
 
+    def phone_candidates(self, phone):
+        """Documented Leads.Get criteria; normalize results before accepting a match.
+
+        A suffix search includes country-code prefixes and common stored formats.
+        Both Phone and Mobile are searched; every result page must complete.
+        """
+        digits=''.join(c for c in phone if c.isdigit())
+        if len(digits)<7:raise ValueError('Invalid phone number')
+        found={}
+        for field in ('Phone','Mobile'):
+            for page in range(1,11):
+                rows=self.transport.request('POST','/v2/LeadManagement.svc/Leads.Get',json={
+                    'Parameter':{'LookupName':field,'LookupValue':'%'+digits[-4:],'SqlOperator':'LIKE'},
+                    'Columns':{'Include_CSV':'ProspectID,FirstName,LastName,Phone,Mobile,CreatedOn,ProspectStage,OwnerId,Source'},
+                    'Sorting':{'ColumnName':'CreatedOn','Direction':'1'},
+                    'Paging':{'PageIndex':page,'PageSize':1000}})
+                if not isinstance(rows,list) or any(not isinstance(r,dict) or not r.get('ProspectID') for r in rows):
+                    raise ProviderError('Unexpected LeadSquared lead-list schema')
+                for row in rows:found[row['ProspectID']]=row
+                if len(rows)<1000:break
+            else:raise ProviderError('Phone search incomplete; retry required')
+        return list(found.values())
+
     def close(self):
         self.transport.close()

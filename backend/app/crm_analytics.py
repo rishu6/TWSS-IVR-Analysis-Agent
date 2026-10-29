@@ -2,7 +2,7 @@
 import hashlib
 from datetime import UTC
 from sqlalchemy import select
-from .db import Lead
+from .db import Lead,LeadPhone
 from .domain import timestamp
 from .reports import has_department_flow,mask_phone
 from .owner_directory import owner_names,resolve_owner_name
@@ -11,6 +11,15 @@ from .owner_directory import owner_names,resolve_owner_name
 def analytics(db,calls,role,department_selected=True):
     calls=[c for c in calls if not department_selected or has_department_flow(c.projection)]
     ids={lead['id'] for c in calls for lead in c.projection.get('crm',{}).get('candidates',[]) if lead.get('id')}
+    # Positive matches in the saved index are usable immediately, even if the
+    # per-call projection has not yet been refreshed by the background worker.
+    indexed={}
+    numbers=list({c.caller_e164 for c in calls if c.caller_e164 and not c.projection.get('crm',{}).get('candidates')})
+    for offset in range(0,len(numbers),500):
+        for phone,lead_id in db.execute(select(LeadPhone.normalized_number,LeadPhone.lead_id).where(
+                LeadPhone.normalized_number.in_(numbers[offset:offset+500]))):
+            indexed.setdefault(phone,set()).add(lead_id)
+            ids.add(lead_id)
     current={}
     owners=owner_names(db)
     ids=list(ids)
@@ -35,6 +44,8 @@ def analytics(db,calls,role,department_selected=True):
         group['stale']|=bool(crm.get('stale')) or str(crm.get('status','')).startswith('ERROR')
         if crm.get('synced_at') and (not group['synced_at'] or timestamp(crm['synced_at'])<timestamp(group['synced_at'])):
             group['synced_at']=crm['synced_at']
+        for lead_id in indexed.get(call.caller_e164,[]):
+            if lead_id in current:group['candidates'][lead_id]=dict(current[lead_id])
         for candidate in crm.get('candidates',[]):
             group['candidates'][candidate['id']]=dict(current.get(candidate['id'],candidate))
     summary=dict(total_calls=len(calls),unique_callers=0,repeat_calls=0,matched_callers=0,no_match_callers=0,

@@ -209,3 +209,11 @@ Current validation: 99 backend tests and 12 frontend tests passed, production fr
 Live diagnosis confirmed a free-instance shutdown/restart and a long interval between successful Acefone jobs while the sequential CRM index was running. PostgreSQL deployments now poll Acefone independently of the CRM worker, retaining the local SQLite serial behavior. CRM call projections use short per-call row locks to avoid overwriting newer CDR evidence. Scheduler failures retry instead of terminating the task. The banner shows provider sync state and warns after five minutes without a successful import; a browser connection no longer implies fresh provider data. Render Free still pauses all background work while asleep.
 
 Validation: 101 backend tests (including a blocked-CRM/nonblocking-call regression and scheduler retry test), 12 frontend tests and the production frontend build passed.
+
+### LeadSquared caller checks and clearer report — 29 October 2026
+
+Fixed delayed positive matches by joining unmatched callers to the saved phone index and running a separate bounded caller check alongside full indexing. A live read-only provider check recovered four unique callers across six calls. Phone and Mobile searches use the documented criteria API, normalize complete numbers, preserve multiple leads and retry incomplete checks. A newer direct phone result survives an older index refresh.
+
+The LeadSquared tab now uses plain status labels, short summaries, lead creation date/stage and owner names. Technical IDs, per-row sync notes and repeated explanations were removed; the remaining caveats are under “How to read this report.” Pending checks never say “No lead found.”
+
+Validation: existing 101 backend tests plus four phone-matching regressions passed; 12 frontend tests and production build passed.
