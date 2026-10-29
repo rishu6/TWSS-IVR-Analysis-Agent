@@ -133,8 +133,8 @@ test('built internal app enforces personal login and first password change',asyn
   await page.getByRole('button',{name:'Expand flow',exact:true}).click();
   await expect(page.locator('.expanded-flow-row').getByText('First Fixture Agent',{exact:true}).first()).toBeVisible();
   await expect(page.locator('tbody').first().getByText('1 reported',{exact:true}).first()).toBeVisible();
-  await page.getByLabel('Flow display').selectOption('transfers');
-  await expect(page.locator('.expanded-flow-row').getByRole('heading',{name:'Call transfer list',exact:true})).toBeVisible();
+  await expect(page.getByLabel('Flow display')).toHaveCount(0);
+  await expect(page.locator('.expanded-flow-row').getByRole('heading',{name:'Chronological call flow',exact:true})).toBeVisible();
   await expect(page.locator('.expanded-flow-row').getByText('First Fixture Agent',{exact:true}).first()).toBeVisible();
   await page.getByRole('tab',{name:'Answered 1',exact:true}).click();
   await page.getByRole('button',{name:'Expand flow',exact:true}).click();
