@@ -37,3 +37,30 @@ def test_directory_cache_and_failure_preserve_names(internal):
         assert resolve_owner_name('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',names) is None
         assert resolve_owner_name('Fixture Owner',names)=='Fixture Owner'
     assert refresh_owner_directory(sessions,{},client_factory=Broken,clock=clock+timedelta(hours=2,minutes=1))['status']=='RETRY_LATER'
+
+
+def test_call_details_and_journey_resolve_current_owner_name(internal):
+    from sqlalchemy import select
+    from app.db import Call,IntegrationState,Lead
+    from app.cdr import store_record
+    from app.crm import enrich
+    from types import SimpleNamespace
+    from test_internal import cdr,sign_in
+    candidate=dict(id='lead-owner',display_name='Test lead',current_stage='New',
+        current_owner=OWNER,created_at='2026-01-01T00:00:00Z',source='Test',phones=['+12025550101'])
+    with internal.app.state.sessions.begin() as db:
+        store_record(db,cdr());call=db.scalar(select(Call));call_id=call.id
+        enrich(db,call,SimpleNamespace(lookup=lambda _: [candidate]),force=True)
+        db.add(IntegrationState(provider='leadsquared-users',status='HEALTHY',details={'owners':{OWNER:'Owner Name'}}))
+    sign_in(internal,'viewer','viewer-password-123')
+    for suffix in ['', '/journey','/crm']:
+        response=internal.get('/api/v1/calls/'+call_id+suffix)
+        assert response.status_code==200
+        crm=response.json() if suffix=='/crm' else response.json()['crm']
+        assert crm['candidates'][0]['current_owner_name']=='Owner Name'
+        assert crm['candidates'][0]['display_name']=='Restricted lead'
+    with internal.app.state.sessions.begin() as db:
+        db.get(Lead,'lead-owner').current_owner='aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+    # Missing names remain unavailable; never label an ID as a name.
+    result=internal.get('/api/v1/calls/'+call_id+'/journey').json()
+    assert result['crm']['candidates'][0]['current_owner_name'] is None

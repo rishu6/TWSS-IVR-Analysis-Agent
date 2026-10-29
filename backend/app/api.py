@@ -107,7 +107,7 @@ def calls_summary(f=Depends(filters),user=Depends(principal),db=Depends(session_
 @router.get('/calls/{id}')
 def detail(id: str, user=Depends(principal), db=Depends(session_db)):
     call = find_call(db, id)
-    data = present(call, user.role)
+    data = present(call, user.role, db=db)
     older = db.scalar(select(func.count()).select_from(Call).where(Call.caller_e164 == call.caller_e164,
                         Call.started_at < call.started_at)) if call.started_at and call.caller_e164 else None
     data['first_observed_in_dataset'] = older == 0 if older is not None else None
@@ -116,12 +116,12 @@ def detail(id: str, user=Depends(principal), db=Depends(session_db)):
 
 @router.get('/calls/{id}/journey')
 def journey(id: str, user=Depends(principal), db=Depends(session_db)):
-    return present(find_call(db, id), user.role, journey=True)
+    return present(find_call(db, id), user.role, journey=True, db=db)
 
 
 @router.get('/calls/{id}/crm')
 def crm(id: str, user=Depends(principal), db=Depends(session_db)):
-    return present(find_call(db, id), user.role)['crm']
+    return present(find_call(db, id), user.role, db=db)['crm']
 
 
 @router.get('/calls/{id}/recording')

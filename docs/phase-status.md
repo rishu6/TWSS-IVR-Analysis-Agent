@@ -217,3 +217,9 @@ Fixed delayed positive matches by joining unmatched callers to the saved phone i
 The LeadSquared tab now uses plain status labels, short summaries, lead creation date/stage and owner names. Technical IDs, per-row sync notes and repeated explanations were removed; the remaining caveats are under “How to read this report.” Pending checks never say “No lead found.”
 
 Validation: existing 101 backend tests plus four phone-matching regressions passed; 12 frontend tests and production build passed.
+
+### Call details cleanup and owner names — 29 October 2026
+
+Removed the call drawer's notice boxes, repeated CRM caveats, sync notes and technical call/lead IDs. Call detail, journey and CRM endpoints now resolve the current saved lead owner through the LeadSquared user directory, so the drawer shows a name instead of the stored identifier. Unknown directory entries display “Owner name unavailable.” Existing Viewer lead-name masking is preserved.
+
+Validation: three owner-directory tests (including all three detail endpoints, current-owner changes and missing names), twelve frontend tests and the production frontend build passed.

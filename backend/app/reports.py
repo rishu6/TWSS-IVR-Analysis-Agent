@@ -48,11 +48,20 @@ def mask_phone(value):
     return f'••••••{value[-4:]}' if value else None
 
 
-def present(call, role, journey=False):
+def present(call, role, journey=False, db=None):
     data = {**call.projection}
     data.pop('events', None)
     data['event_count']=len(call.projection.get('events',[]))
     data['crm'] = dict(data.get('crm', {'status': 'PENDING', 'candidates': [], 'snapshot_source': 'current only'}))
+    if db is not None:
+        from .owner_directory import owner_names,resolve_owner_name
+        names=owner_names(db)
+        candidates=[]
+        for lead in data['crm'].get('candidates',[]):
+            current=db.get(Lead,lead['id'])
+            owner=current.current_owner if current else lead.get('current_owner')
+            candidates.append({**lead,'current_owner_name':resolve_owner_name(owner,names)})
+        data['crm']['candidates']=candidates
     if role == 'Viewer':
         data['caller'] = mask_phone(data['caller'])
         data['did'] = mask_phone(data['did'])

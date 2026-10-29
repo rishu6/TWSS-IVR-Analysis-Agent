@@ -1,6 +1,6 @@
 export type Role = 'Admin' | 'Manager' | 'Viewer';
 export type Leg = { id:string; agent:string|null; department:string|null; ring_at:string|null; answer_at:string|null; end_at:string|null; disposition:string; talk_seconds:number|null; response_seconds:number|null };
-export type Lead = { id:string; display_name:string; current_stage:string; current_owner:string; source:string; created_at:string };
+export type Lead = { id:string; display_name:string; current_stage:string; current_owner:string; current_owner_name?:string|null; source:string; created_at:string };
 export type CRM = { matching_scope?:string;stale?:boolean;status:string; candidates:Lead[]; snapshot_source:string; synced_at?:string; error?:string; next_retry_at?:string; attempts?:number };
 export type Participant = {id:string;agent_name:string|null;agent_number:string|null;provider_agent_id:string|null;dialed_at:string[];answered_at:string[];reported_missed:boolean;missed_at:string|null};
 export type JourneyEvent = {agent_number?:string|null;disposition?:string|null;provider_agent_id?:string|null;event_id:string; type:string; at:string; agent?:string; department?:string; node?:string; key?:string; leg_id?:string; reason?:string; source_leg_id?:string; target_leg_id?:string};
