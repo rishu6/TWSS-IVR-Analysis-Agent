@@ -1,0 +1,16 @@
+import { useEffect,useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { dateBoundary,indiaDay,shiftDay } from './lib';
+
+export function ReportFilters({departments,showDates=true,live=false}:{departments:string[];showDates?:boolean;live?:boolean}){
+  const [params,setParams]=useSearchParams();
+  const selectedFrom=params.get('start')?indiaDay(params.get('start')!):'';
+  const selectedThrough=params.get('end')?indiaDay(new Date(new Date(params.get('end')!).getTime()-1)):'';
+  const [from,setFrom]=useState(selectedFrom);const [through,setThrough]=useState(selectedThrough);
+  const [department,setDepartment]=useState(params.get('department')||'');const [status,setStatus]=useState(params.get('outcome')||'');
+  useEffect(()=>{setFrom(selectedFrom);setThrough(selectedThrough);setDepartment(params.get('department')||'');setStatus(params.get('outcome')||'');},[selectedFrom,selectedThrough,params]);
+  function apply(a=from,b=through){const next=new URLSearchParams(params);next.delete('page');if(status!=='MISSED')next.delete('missed_department');if(showDates){a?next.set('start',dateBoundary(a)):next.delete('start');b?next.set('end',dateBoundary(b,true)):next.delete('end');}department?next.set('department',department):next.delete('department');status?next.set('outcome',status):next.delete('outcome');setParams(next);}
+  function reset(){const next=new URLSearchParams(params);['start','end','department','outcome','page','missed_department'].forEach(k=>next.delete(k));setParams(next);}
+  const choices=department&&!departments.includes(department)?[department,...departments]:departments;
+  return <section className="report-filter-layer" aria-label="Date, department and call status filters"><form onSubmit={e=>{e.preventDefault();apply();}}>{showDates&&<><label>From date · IST<input aria-label="Report from date" type="date" value={from} max={through||undefined} onChange={e=>setFrom(e.target.value)}/></label><label>Through date · IST<input aria-label="Report through date" type="date" value={through} min={from||undefined} onChange={e=>setThrough(e.target.value)}/></label></>}<label>Department<select aria-label="Department" value={department} onChange={e=>setDepartment(e.target.value)}><option value="">All departments</option>{choices.map(d=><option key={d}>{d}</option>)}</select></label><label>Call status<select aria-label="Call status" value={live?'IN_PROGRESS':status} disabled={live} onChange={e=>setStatus(e.target.value)}><option value="">All statuses</option>{['ANSWERED','MISSED','IVR_ONLY','ABANDONED','IN_PROGRESS','UNKNOWN'].map(s=><option key={s} value={s}>{s.toLowerCase().replaceAll('_',' ')}</option>)}</select></label><button className="primary" type="submit">Apply filters</button><button className="secondary" type="button" onClick={reset}>Reset filters</button></form>{showDates&&<div className="report-date-shortcuts"><span className="muted">Quick dates</span>{[['Today',0],['Yesterday',-1],['Last 7 days',-6],['Last 30 days',-29]].map(([title,offset])=><button key={title} className="text-button" type="button" onClick={()=>{const today=indiaDay();const a=shiftDay(today,Number(offset));apply(a,title==='Yesterday'?a:today);}}>{title}</button>)}</div>}</section>;
+}

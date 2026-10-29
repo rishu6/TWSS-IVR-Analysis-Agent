@@ -1,0 +1,41 @@
+import { PageSize,usePageSize,pageSizeQuery } from './PageSize';
+import { useEffect,useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronDown,ChevronUp,ArrowUpRight } from 'lucide-react';
+import type { Call,Page,Role } from './types';
+import { api,dateBoundary,duration,indiaDay,label,localTime,shiftDay } from './lib';
+import { CallTimeline } from './CallTimeline';
+import { CallTransferList } from './CallTransferList';
+import { missedAgents } from './callAgents';
+
+function ExpandedFlow({id,view}:{id:string;view:string}) {
+  const query=useQuery({queryKey:['call',id],queryFn:()=>api<Call>(`/calls/${encodeURIComponent(id)}/journey`),refetchInterval:30000});
+  return query.error?<div className="notice error" role="alert">{query.error.message}</div>:query.data?(view==='transfers'?<CallTransferList call={query.data}/>:<CallTimeline call={query.data}/>):<p className="loading">Loading full call flow…</p>;
+}
+
+export function DetailedCallFlow({onOpen}:{role:Role;demo:boolean;onOpen:(id:string)=>void}) {
+  const [params,setParams]=useSearchParams();
+  const today=indiaDay();
+  const selectedFrom=params.get('start')?indiaDay(params.get('start')!):'';
+  const selectedThrough=params.get('end')?indiaDay(new Date(new Date(params.get('end')!).getTime()-1)):'';
+  const [from,setFrom]=useState(selectedFrom);const [through,setThrough]=useState(selectedThrough);
+  useEffect(()=>{setFrom(selectedFrom);setThrough(selectedThrough);},[selectedFrom,selectedThrough]);
+  const [expanded,setExpanded]=useState<string|null>(null);
+  const filter=new URLSearchParams(params);filter.delete('page');filter.delete('page_size');filter.delete('show_all');filter.delete('flow_view');filter.set('direction',params.get('direction')||'inbound');
+  const view=params.get('flow_view')||'timeline';
+  const size=usePageSize();
+  const page=Number(params.get('page')||1);
+  const rows=useQuery({queryKey:['detailed-flow',filter.toString(),page,size],queryFn:()=>api<Page>(`/calls?${filter}&page=${page}&${pageSizeQuery(size)}`),refetchInterval:30000});
+  const counts=useQuery({queryKey:['flow-counts',filter.toString()],queryFn:()=>api<{total:number;outcomes:Record<string,number>;missed_department:number}>(`/calls-summary?${filter}`),refetchInterval:30000});
+  function dates(a:string,b:string){setFrom(a);setThrough(b);setExpanded(null);const n=new URLSearchParams(params);n.delete('page');n.set('start',dateBoundary(a));n.set('end',dateBoundary(b,true));setParams(n);}
+  function outcome(value:string){const n=new URLSearchParams(params);n.delete('page');n.delete('missed_department');if(value==='MISSED_DEPARTMENT'){n.set('outcome','MISSED');n.set('missed_department','true');}else{value?n.set('outcome',value):n.delete('outcome');}setExpanded(null);setParams(n);}
+  function pagination(value:number){const n=new URLSearchParams(params);n.set('page',String(value));setParams(n);setExpanded(null);}
+  const current=params.get('outcome')==='MISSED'&&params.get('missed_department')==='true'?'MISSED_DEPARTMENT':params.get('outcome')||'';
+  return <><section className="flow-datebar" aria-label="Detailed call flow date range"><form onSubmit={e=>{e.preventDefault();dates(from,through);}}><label>From date · IST<input aria-label="Flow from date" type="date" value={from} max={through||today} onChange={e=>setFrom(e.target.value)} required/></label><label>Through date · IST<input aria-label="Flow through date" type="date" value={through} min={from} max={today} onChange={e=>setThrough(e.target.value)} required/></label><button className="primary" type="submit">Apply date range</button><button type="button" className="secondary" onClick={()=>dates(today,today)}>Today</button><button type="button" className="secondary" onClick={()=>dates(shiftDay(today,-1),shiftDay(today,-1))}>Yesterday</button><button type="button" className="secondary" onClick={()=>dates(shiftDay(today,-6),today)}>Last 7 days</button><button type="button" className="secondary" onClick={()=>dates(shiftDay(today,-29),today)}>Last 30 days</button></form><p className="muted">Date filters use the provider call start date in India time. Filtering stored calls does not fetch missing history.</p></section><section className="panel"><div className="panel-heading"><div><span className="eyebrow">DETAILED CALL FLOW</span><h2>Answered and missed call journeys</h2><p className="muted">Expand a call to see IVR, departments, agent dial/answer events and provider-reported missed agents.</p></div><label className="flow-direction">Flow display<select aria-label="Flow display" value={view} onChange={e=>{const n=new URLSearchParams(params);n.set('flow_view',e.target.value);setParams(n);}}><option value="timeline">Detailed timeline</option><option value="transfers">Call transfer list</option></select></label><label className="flow-direction">Direction<select aria-label="Flow direction" value={filter.get('direction')||'inbound'} onChange={e=>{const n=new URLSearchParams(params);n.set('direction',e.target.value);n.delete('page');setParams(n);}}><option value="inbound">Inbound</option><option value="outbound">Outbound</option></select></label></div><div className="flow-tabs" role="tablist" aria-label="Call flow outcome">{[['','All calls',counts.data?.total],['ANSWERED','Answered',counts.data?.outcomes.ANSWERED||0],['MISSED','Missed',counts.data?.outcomes.MISSED||0],['MISSED_DEPARTMENT','Missed after department selection',counts.data?.missed_department||0]].map(([value,title,count])=><button key={String(value)} role="tab" aria-selected={current===value} className={current===value?'active':''} onClick={()=>outcome(String(value))}>{title} <span>{count??'…'}</span></button>)}</div>{rows.error && <div className="notice error" role="alert">{rows.error.message}</div>}{rows.isPending?<div className="loading">Loading call flows…</div>:<div className="table-wrap"><table><thead><tr><th>Call / caller</th><th>Start · IST</th><th>Outcome</th><th>Department</th><th>Answered by</th><th>Agents missed · reported</th><th>Flow</th></tr></thead><tbody>{rows.data?.items.map(call=><FlowRow key={call.id} call={call} view={view} expanded={expanded===call.id} onToggle={()=>setExpanded(expanded===call.id?null:call.id)} onOpen={()=>onOpen(call.id)}/>)}</tbody></table>{rows.data?.items.length===0 && <div className="empty"><h3>No imported calls match this selection.</h3><p>Choose another date range or adjust the filters to view stored calls.</p></div>}</div>}<div className="pagination"><span>{rows.data?.total||0} logical calls · page {page}</span><PageSize onChange={()=>setExpanded(null)}/><div><button className="text-button" disabled={page<=1} onClick={()=>pagination(page-1)}>Previous</button><button className="text-button" disabled={!rows.data?.next_page} onClick={()=>pagination(page+1)}>Next</button></div></div></section></>;
+}
+
+function FlowRow({call,view,expanded,onToggle,onOpen}:{call:Call;view:string;expanded:boolean;onToggle:()=>void;onOpen:()=>void}) {
+  const missed=missedAgents(call);
+  return <><tr><td><strong>{call.caller||'Caller unavailable'}</strong><small>{call.provider_call_id||call.id}</small></td><td>{localTime(call.started_at,true)}<small>{duration(call.duration_seconds)} · {call.direction}</small></td><td><span className={`badge ${call.status.toLowerCase()}`}>{label(call.status)}</span></td><td>{call.primary_department||'Unassigned'}</td><td><strong>{call.answering_agent||'No answerer supplied'}</strong><small>{call.answering_agent_source==='last_answer_event'?'Latest answer event':'Provider CDR answerer'}</small></td><td><strong className="missed-agent-count">{missed===undefined?'Unavailable':`${missed.length} reported`}</strong><small>{missed?.map(p=>p.agent_name||'Name unavailable').join(', ')||'No names supplied'}</small><small>People, not ring attempts</small></td><td><div className="button-row"><button className="text-button" aria-expanded={expanded} onClick={onToggle}>{expanded?<ChevronUp size={16}/>:<ChevronDown size={16}/>} {expanded?'Collapse':'Expand'} flow</button><button className="icon-button" aria-label={`Open full call ${call.id}`} onClick={onOpen}><ArrowUpRight size={16}/></button></div></td></tr>{expanded && <tr className="expanded-flow-row"><td colSpan={7}><ExpandedFlow id={call.id} view={view}/></td></tr>}</>;
+}

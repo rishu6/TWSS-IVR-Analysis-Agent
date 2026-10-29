@@ -1,0 +1,3 @@
+export function Brand(){
+  return <div className="brand twss-brand" aria-label="TWSS IVR"><svg className="twss-logo" viewBox="0 0 64 64" role="img" aria-label="TWSS logo"><rect width="64" height="64" rx="17" fill="var(--logo-bg,#244b78)"/><g fill="none" stroke="var(--logo-ink,#edf3f5)" strokeWidth="3.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16h16M20 16v15M35 16l3 15 6-11 6 11 3-15"/><path d="M28 39c-3-3-13-3-13 2 0 5 13 3 13 8 0 5-10 5-14 2M51 39c-3-3-13-3-13 2 0 5 13 3 13 8 0 5-10 5-14 2"/></g></svg><span className="brand-wordmark">TWSS<span className="brand-product">IVR</span></span></div>;
+}
