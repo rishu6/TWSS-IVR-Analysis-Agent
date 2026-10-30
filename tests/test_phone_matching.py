@@ -70,3 +70,24 @@ def test_direct_phone_match_survives_older_index_refresh(internal):
     worker.enrich_calls(True,datetime(2026,10,29,10,tzinfo=UTC))
     with internal.app.state.sessions() as db:
         assert db.scalar(select(Call)).projection['crm']['candidates']==[{'id':'fresh'}]
+
+
+def test_unchanged_crm_calls_do_not_reload_full_journeys(internal):
+    from datetime import UTC,datetime
+    from sqlalchemy import event
+    from app.db import IntegrationState
+    stamp=datetime(2026,10,30,0,0,tzinfo=UTC)
+    with internal.app.state.sessions.begin() as db:
+        store_record(db,cdr())
+        call=db.scalar(select(Call))
+        call.projection={**call.projection,'crm':{'status':'MATCHED','candidates':[],
+            'synced_at':stamp.isoformat(),'stale':False}}
+        db.add(IntegrationState(provider='leadsquared',status='HEALTHY',details={}))
+    statements=[]
+    def capture(connection,cursor,statement,parameters,context,many):statements.append(statement)
+    engine=internal.app.state.engine
+    event.listen(engine,'before_cursor_execute',capture)
+    try:LiveSync(internal.app.state.settings,internal.app.state.sessions).enrich_calls(True,stamp)
+    finally:event.remove(engine,'before_cursor_execute',capture)
+    assert not any('SELECT calls.id, calls.provider' in statement for statement in statements)
+    assert not any(statement.lstrip().upper().startswith(('UPDATE','DELETE','INSERT')) for statement in statements)

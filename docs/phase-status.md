@@ -259,3 +259,11 @@ Validation: 16 frontend tests, production build and the Chrome LeadSquared regre
 Added Call patterns with busiest weekday, busiest hour and peak weekday/hour highlights, seven-day volume bars, a selectable weekday hourly chart and an interactive 7×24 heatmap. Counts use the existing filtered inbound hourly report and Asia/Kolkata time, including all recorded call outcomes by default. Ties are retained, empty data has no invented winner, and records without start times are excluded with a count when applicable. This week uses Monday through today; Last week uses the previous complete Monday–Sunday week. Date, department, call status and search filters remain independent from other tabs.
 
 Validation: 20 frontend tests, production build and a Chrome test passed. Coverage includes India-day boundaries, multiple weeks, tied leaders, aggregate consistency, hour/weekday focus, calendar-week shortcuts, empty results, independent navigation, both themes and mobile width. No external API endpoints or database changes were introduced.
+
+### Neon network-transfer suspension — 30 October 2026
+
+Render was not suspended, but cold-start migrations failed because Neon refused database connections with a quota error. The Neon Console banner confirmed the monthly network-transfer allowance was exhausted. The live app cannot regain database access until the provider billing-period reset or an explicitly authorized plan change. No paid upgrade, data deletion or database replacement was performed.
+
+Prepared traffic reductions: internal pages now fetch only visible report types and no longer subscribe to the demo's five-second invalidation stream. CRM enrichment selects only changed/pending call IDs before loading full journeys, instead of reloading every unchanged projection each cycle. Caller matching fetches compact unmatched metadata instead of every full call record. Sync cadence and provider endpoints are unchanged.
+
+Validation: 110 backend tests, 20 frontend tests, production build and a synthetic Chrome request-budget test passed. Live database validation remains blocked by the provider quota. These changes are prepared for recovery; they do not restore consumed allowance. Reference: https://neon.com/docs/introduction/network-transfer

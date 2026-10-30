@@ -85,8 +85,8 @@ function Workspace({role,onLogout,demo,name}:{role:Role;onLogout:()=>void;demo:b
   const filter=filterParams.toString();
   const size=usePageSize();
   const page=Number(params.get('page')||1);
-  const calls=useQuery({queryKey:['calls',filter,page,size],queryFn:()=>api<Page>(`/calls?${filter}&page=${page}&${pageSizeQuery(size)}`),refetchInterval:30000});
-  const metrics=useQuery({queryKey:['metrics',filter],queryFn:()=>api<Metrics>(`/metrics/overview?${filter}`),refetchInterval:30000});
+  const calls=useQuery({queryKey:['calls',filter,page,size],queryFn:()=>api<Page>(`/calls?${filter}&page=${page}&${pageSizeQuery(size)}`),enabled:path==='/live'||path==='/exports',refetchInterval:30000});
+  const metrics=useQuery({queryKey:['metrics',filter],queryFn:()=>api<Metrics>(`/metrics/overview?${filter}`),enabled:path==='/'||path==='/patterns',refetchInterval:30000});
   const agentFilter=new URLSearchParams(filter);if(path==='/'){agentFilter.set('direction','inbound');agentFilter.set('ranking_exclude_department','Support');}
   const agents=useQuery({queryKey:['agents',agentFilter.toString()],queryFn:()=>api<{items:Agent[];ranking_items?:Agent[]}>(`/reports/agents?${agentFilter}`),enabled:path==='/agents'||path==='/',refetchInterval:30000});
   const departments=useQuery({queryKey:['departments',filter],queryFn:()=>api<{items:Department[]}>(`/reports/departments?${filter}`),enabled:path==='/departments'||path==='/',refetchInterval:30000});
@@ -95,6 +95,7 @@ function Workspace({role,onLogout,demo,name}:{role:Role;onLogout:()=>void;demo:b
   const callSyncLabel=status.data?.providers?.acefone?.status==='ERROR'?'Call sync failed · retrying':status.data?.providers?.acefone?.status==='SYNCING'?'Importing calls…':!status.data?.last_successful_sync?'Waiting for first call sync':Date.now()-Date.parse(status.data.last_successful_sync)>300000?'Call sync delayed · check Admin':'Call sync active';
   const retryCRM=useMutation({mutationFn:()=>api('/demo/retry-crm',{method:'POST'}),onSuccess:()=>cache.invalidateQueries()});
   useEffect(()=>{
+    if(!demo)return; // Internal reports already poll; demo invalidations must not multiply cloud reads.
     let socket:WebSocket|undefined, stopped=false;
     api<{token:string}>('/live-token',{method:'POST'}).then(({token})=>{
       if(stopped)return;

@@ -2,7 +2,7 @@ import threading
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select,delete,func,insert
+from sqlalchemy import select,delete,func,insert,or_,and_
 
 from .cdr import store_record,restricted_payload
 from .credentials import load_credentials
@@ -111,12 +111,15 @@ class LiveSync:
             client=LiveLeadSquaredClient(credentials)
             from .reports import has_department_flow
             with self.sessions() as db:
-                calls=db.scalars(select(Call).where(Call.provider=='acefone').order_by(Call.started_at.desc())).all()
+                status=Call.projection['crm']['status'].as_string()
+                calls=db.execute(select(Call.caller_e164,Call.projection['crm'].label('crm'),Call.projection['events'].label('events')).where(
+                    Call.provider=='acefone',Call.caller_e164.is_not(None),
+                    or_(status.is_(None),status.not_in(['MATCHED','MULTIPLE_MATCHES']))).order_by(Call.started_at.desc())).all()
                 phones=[]
                 for call in calls:
-                    crm=call.projection.get('crm',{})
+                    crm=call.crm or {}
                     checked=crm.get('phone_checked_at')
-                    if (call.caller_e164 and has_department_flow(call.projection) and not crm.get('candidates')
+                    if (call.caller_e164 and has_department_flow({'events':call.events or []}) and not crm.get('candidates')
                         and call.caller_e164 not in phones
                         and (not checked or now()-datetime.fromisoformat(checked)>timedelta(minutes=15))):
                         phones.append(call.caller_e164)
@@ -263,7 +266,21 @@ class LiveSync:
 
     def enrich_calls(self,complete,last_success):
         with self.sessions() as db:
-            call_ids=list(db.scalars(select(Call.id).where(Call.provider=='acefone')))
+            state=db.get(IntegrationState,'leadsquared')
+            stale=bool(state and state.status!='HEALTHY')
+            query=select(Call.id).where(Call.provider=='acefone')
+            crm=Call.projection['crm']
+            status=crm['status'].as_string()
+            if complete and last_success:
+                synced=crm['synced_at'].as_string()
+                saved_stale=crm['stale'].as_boolean()
+                stale_changed=or_(saved_stale.is_(None),saved_stale==False) if stale else saved_stale==True
+                query=query.where(or_(synced.is_(None),synced!=last_success.isoformat(),
+                    status.is_(None),status.in_(['PENDING','ERROR']),stale_changed,
+                    and_(status=='INVALID_PHONE',Call.caller_e164.is_not(None))))
+            elif not complete:
+                query=query.where(or_(status.is_(None),status!='PENDING'))
+            call_ids=list(db.scalars(query))
         for call_id in call_ids:
             # Keep locks short so CRM projection writes cannot overwrite newer CDR data.
             with self.sessions.begin() as db:
