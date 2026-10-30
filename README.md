@@ -2,13 +2,19 @@
 
 A Mac-local internal dashboard for analysing Acefone call history alongside LeadSquared leads. Built with React, TypeScript, FastAPI and SQLite. Provider integrations are read-only.
 
+## Project documentation
+
+The [documentation register](Documentation/00_Documentation_Register.md) covers business requirements, architecture, security/privacy, testing, operations and staff guides. Open the [HTML reader](Documentation/index.html), [Word BRD](Documentation/TWSS_IVR_Business_Requirements.docx), or download the [complete pack](TWSS_IVR_Documentation.zip). Policies and approvals are review drafts.
+
 ## Features
 
 - Business overview with call totals, answered/missed trends and sortable agent charts.
 - Separate Answered calls, Missed calls, Best agent and Worst agent tabs. Best/worst rankings exclude Support calls and the configured failover-agent name.
 - Detailed call journeys with IVR/department events, reported missed-agent counts and recorded dial/answer activity. Includes a **Missed after department selection** filter.
 - LeadSquared insights with unique callers, repeat calls, existing lead matches, lead creation dates, current stages and resolved lead owner names.
-- Date, department, status and search filters, CSV/XLSX call exports, and shared rows-per-page choices: 10, 25, 50, 100 or All.
+- Independent date, department, status and search filters per tab, CSV/XLSX call exports, and per-tab rows-per-page choices: 10, 25, 50, 100 or All.
+- Call patterns with weekday/hour charts and a weekly heatmap to identify peak incoming demand.
+- LeadSquared missed-call subsections for all missed calls or only calls missed after department selection.
 - Individual password accounts, Admin/Manager/Viewer permissions, mandatory first-login password change, Viewer masking and audit logs.
 - TWSS vector branding and compact Light/Dark appearance controls.
 - Resumable historical imports and CRM indexing, local backups and raw-data retention.
@@ -40,7 +46,7 @@ See [internal installation and operations](docs/internal-deployment.md) for staf
 
 ## Render deployment
 
-See [Render Free + Neon Free deployment](docs/render-deployment.md) for cloud configuration and migration of an existing Mac installation. The free deployment needs a separate persistent PostgreSQL database; local SQLite files cannot survive Render Free restarts.
+See [Render Free + Neon Free deployment](docs/render-deployment.md) for cloud configuration and migration of an existing Mac installation. The free deployment needs a separate persistent PostgreSQL database; local SQLite files cannot survive Render Free restarts. **Status on 30 October 2026:** cloud startup is blocked by the exhausted Neon monthly network-transfer allowance. The Mac installation is the current fallback; no paid upgrade is approved.
 
 ## Synthetic demo
 

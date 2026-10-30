@@ -1,0 +1,388 @@
+{
+  "baseline": "2026-10-30",
+  "source_commit": "9fa87271efd5d69d2d769c519150b032df97bdf9",
+  "document_count": 63,
+  "category_count": 10,
+  "orm_table_count": 16,
+  "openapi_path_count": 37,
+  "documents": [
+    {
+      "id": "P-01",
+      "title": "Business Requirements Document",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-01_Business_Requirements_Document.md"
+    },
+    {
+      "id": "P-02",
+      "title": "Product Walkthrough",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-02_Product_Walkthrough.md"
+    },
+    {
+      "id": "P-03",
+      "title": "Product Requirements Specification",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-03_Product_Requirements_Specification.md"
+    },
+    {
+      "id": "P-04",
+      "title": "Personas and Journey Maps",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-04_Personas_and_Journey_Maps.md"
+    },
+    {
+      "id": "P-05",
+      "title": "User Workflow Specifications",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-05_User_Workflow_Specifications.md"
+    },
+    {
+      "id": "P-06",
+      "title": "Roles and Permissions Matrix",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-06_Roles_and_Permissions_Matrix.md"
+    },
+    {
+      "id": "P-07",
+      "title": "UI UX Specification and Design System",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-07_UI_UX_Specification_and_Design_System.md"
+    },
+    {
+      "id": "P-08",
+      "title": "Reporting Content and Data Presentation Guide",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-08_Reporting_Content_and_Data_Presentation_Guide.md"
+    },
+    {
+      "id": "P-09",
+      "title": "Business Rules Specification",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-09_Business_Rules_Specification.md"
+    },
+    {
+      "id": "P-10",
+      "title": "Product Roadmap and Backlog",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-10_Product_Roadmap_and_Backlog.md"
+    },
+    {
+      "id": "P-11",
+      "title": "Glossary",
+      "status": "As-built draft \u2014 review pending",
+      "file": "01_Product/P-11_Glossary.md"
+    },
+    {
+      "id": "A-01",
+      "title": "Software Architecture Document",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-01_Software_Architecture_Document.md"
+    },
+    {
+      "id": "A-02",
+      "title": "Architecture Decision Records",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-02_Architecture_Decision_Records.md"
+    },
+    {
+      "id": "A-03",
+      "title": "Data Model ERD and Data Dictionary",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-03_Data_Model_ERD_and_Data_Dictionary.md"
+    },
+    {
+      "id": "A-04",
+      "title": "API Specification and Standards",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-04_API_Specification_and_Standards.md"
+    },
+    {
+      "id": "A-05",
+      "title": "Infrastructure Architecture",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-05_Infrastructure_Architecture.md"
+    },
+    {
+      "id": "A-06",
+      "title": "Provider Integration Specifications",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-06_Provider_Integration_Specifications.md"
+    },
+    {
+      "id": "A-07",
+      "title": "Analytics and Reconciliation Engine Specification",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-07_Analytics_and_Reconciliation_Engine_Specification.md"
+    },
+    {
+      "id": "A-08",
+      "title": "Telephony and CRM Data Contracts",
+      "status": "As-built draft \u2014 review pending",
+      "file": "02_Architecture/A-08_Telephony_and_CRM_Data_Contracts.md"
+    },
+    {
+      "id": "S-01",
+      "title": "Security Architecture and Threat Model",
+      "status": "As-built draft \u2014 review pending",
+      "file": "03_Security/S-01_Security_Architecture_and_Threat_Model.md"
+    },
+    {
+      "id": "S-02",
+      "title": "Information Security Policies",
+      "status": "Proposed policy \u2014 approval pending",
+      "file": "03_Security/S-02_Information_Security_Policies.md"
+    },
+    {
+      "id": "S-03",
+      "title": "Secure SDLC Policy",
+      "status": "Proposed policy \u2014 approval pending",
+      "file": "03_Security/S-03_Secure_SDLC_Policy.md"
+    },
+    {
+      "id": "S-04",
+      "title": "Analytics Integrity Specification",
+      "status": "As-built draft \u2014 review pending",
+      "file": "03_Security/S-04_Analytics_Integrity_Specification.md"
+    },
+    {
+      "id": "S-05",
+      "title": "Vulnerability Management and Pen Test Plan",
+      "status": "Proposed plan \u2014 review pending",
+      "file": "03_Security/S-05_Vulnerability_Management_and_Pen_Test_Plan.md"
+    },
+    {
+      "id": "S-06",
+      "title": "Incident Response Plan",
+      "status": "Proposed plan \u2014 approval pending",
+      "file": "03_Security/S-06_Incident_Response_Plan.md"
+    },
+    {
+      "id": "C-01",
+      "title": "Privacy and DPDP Compliance Assessment",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-01_Privacy_and_DPDP_Compliance_Assessment.md"
+    },
+    {
+      "id": "C-02",
+      "title": "Internal Privacy Notice and Acceptable Use",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-02_Internal_Privacy_Notice_and_Acceptable_Use.md"
+    },
+    {
+      "id": "C-03",
+      "title": "Processing Authorization and Consent Specification",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-03_Processing_Authorization_and_Consent_Specification.md"
+    },
+    {
+      "id": "C-04",
+      "title": "Data Inventory Classification and Processing Register",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-04_Data_Inventory_Classification_and_Processing_Register.md"
+    },
+    {
+      "id": "C-05",
+      "title": "Retention Deletion and Data Rights Procedure",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-05_Retention_Deletion_and_Data_Rights_Procedure.md"
+    },
+    {
+      "id": "C-06",
+      "title": "Licensing and Intellectual Property Register",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-06_Licensing_and_Intellectual_Property_Register.md"
+    },
+    {
+      "id": "C-07",
+      "title": "Vendors and Subprocessors Register",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-07_Vendors_and_Subprocessors_Register.md"
+    },
+    {
+      "id": "C-08",
+      "title": "Accessibility Conformance Assessment",
+      "status": "Draft \u2014 business review pending",
+      "file": "04_Privacy_Compliance/C-08_Accessibility_Conformance_Assessment.md"
+    },
+    {
+      "id": "G-01",
+      "title": "Audit Logging Specification",
+      "status": "Draft \u2014 business review pending",
+      "file": "05_Audit_Governance/G-01_Audit_Logging_Specification.md"
+    },
+    {
+      "id": "G-02",
+      "title": "Analytics Definition and Version Governance",
+      "status": "Draft \u2014 business review pending",
+      "file": "05_Audit_Governance/G-02_Analytics_Definition_and_Version_Governance.md"
+    },
+    {
+      "id": "G-03",
+      "title": "Change Management Procedure",
+      "status": "Draft \u2014 business review pending",
+      "file": "05_Audit_Governance/G-03_Change_Management_Procedure.md"
+    },
+    {
+      "id": "G-04",
+      "title": "Access Review Procedure",
+      "status": "Draft \u2014 business review pending",
+      "file": "05_Audit_Governance/G-04_Access_Review_Procedure.md"
+    },
+    {
+      "id": "Q-01",
+      "title": "Test Strategy and Coverage",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "06_Quality_Evaluation/Q-01_Test_Strategy_and_Coverage.md"
+    },
+    {
+      "id": "Q-02",
+      "title": "User Acceptance and Signoff Plan",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "06_Quality_Evaluation/Q-02_User_Acceptance_and_Signoff_Plan.md"
+    },
+    {
+      "id": "Q-03",
+      "title": "Data Quality and Reconciliation Plan",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "06_Quality_Evaluation/Q-03_Data_Quality_and_Reconciliation_Plan.md"
+    },
+    {
+      "id": "Q-04",
+      "title": "Business KPI Framework",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "06_Quality_Evaluation/Q-04_Business_KPI_Framework.md"
+    },
+    {
+      "id": "Q-05",
+      "title": "Product Analytics and Telemetry Plan",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "06_Quality_Evaluation/Q-05_Product_Analytics_and_Telemetry_Plan.md"
+    },
+    {
+      "id": "N-01",
+      "title": "Nonfunctional Requirements and Service Objectives",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "07_Performance_Scaling/N-01_Nonfunctional_Requirements_and_Service_Objectives.md"
+    },
+    {
+      "id": "N-02",
+      "title": "Performance and Network Optimization Guide",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "07_Performance_Scaling/N-02_Performance_and_Network_Optimization_Guide.md"
+    },
+    {
+      "id": "N-03",
+      "title": "Capacity and Scaling Plan",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "07_Performance_Scaling/N-03_Capacity_and_Scaling_Plan.md"
+    },
+    {
+      "id": "N-04",
+      "title": "Load and Resilience Test Plan",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "07_Performance_Scaling/N-04_Load_and_Resilience_Test_Plan.md"
+    },
+    {
+      "id": "D-01",
+      "title": "Environment and Configuration Guide",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-01_Environment_and_Configuration_Guide.md"
+    },
+    {
+      "id": "D-02",
+      "title": "Build Test and Deployment Pipeline",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-02_Build_Test_and_Deployment_Pipeline.md"
+    },
+    {
+      "id": "D-03",
+      "title": "Branching Versioning and Release Procedure",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-03_Branching_Versioning_and_Release_Procedure.md"
+    },
+    {
+      "id": "D-04",
+      "title": "Infrastructure as Code Assessment",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-04_Infrastructure_as_Code_Assessment.md"
+    },
+    {
+      "id": "D-05",
+      "title": "Observability and Alerting Guide",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-05_Observability_and_Alerting_Guide.md"
+    },
+    {
+      "id": "D-06",
+      "title": "Backup Disaster Recovery and Business Continuity",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-06_Backup_Disaster_Recovery_and_Business_Continuity.md"
+    },
+    {
+      "id": "D-07",
+      "title": "Operational Runbooks",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-07_Operational_Runbooks.md"
+    },
+    {
+      "id": "D-08",
+      "title": "Support Model and Service Level Proposal",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "08_DevOps_SRE/D-08_Support_Model_and_Service_Level_Proposal.md"
+    },
+    {
+      "id": "L-01",
+      "title": "AI Applicability and Responsible AI Assessment",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "02_Architecture/L-01_AI_Applicability_and_Responsible_AI_Assessment.md"
+    },
+    {
+      "id": "U-01",
+      "title": "Business User Guide and FAQ",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "10_User_Training/U-01_Business_User_Guide_and_FAQ.md"
+    },
+    {
+      "id": "U-02",
+      "title": "Manager and Analyst Handbook",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "10_User_Training/U-02_Manager_and_Analyst_Handbook.md"
+    },
+    {
+      "id": "U-03",
+      "title": "Administrator Manual",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "10_User_Training/U-03_Administrator_Manual.md"
+    },
+    {
+      "id": "U-04",
+      "title": "Developer Onboarding and Coding Guide",
+      "status": "As-built / proposed guidance \u2014 review pending",
+      "file": "10_User_Training/U-04_Developer_Onboarding_and_Coding_Guide.md"
+    },
+    {
+      "id": "M-01",
+      "title": "Project Charter and Responsibility Matrix",
+      "status": "Draft \u2014 business review pending",
+      "file": "11_Project_Management/M-01_Project_Charter_and_Responsibility_Matrix.md"
+    },
+    {
+      "id": "M-02",
+      "title": "Delivery Timeline and Budget Register",
+      "status": "Draft \u2014 business review pending",
+      "file": "11_Project_Management/M-02_Delivery_Timeline_and_Budget_Register.md"
+    },
+    {
+      "id": "M-03",
+      "title": "Risk Issue and Dependency Register",
+      "status": "Draft \u2014 business review pending",
+      "file": "11_Project_Management/M-03_Risk_Issue_and_Dependency_Register.md"
+    },
+    {
+      "id": "M-04",
+      "title": "Decision Log and Open Decisions",
+      "status": "Draft \u2014 business review pending",
+      "file": "11_Project_Management/M-04_Decision_Log_and_Open_Decisions.md"
+    }
+  ]
+}

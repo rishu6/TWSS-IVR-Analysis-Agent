@@ -8,7 +8,7 @@ Target chosen by the user: run on this Mac, with individual password accounts an
 .venv/bin/python scripts/internal.py
 ```
 
-Open **http://localhost:8001**. Username: **localadmin**. The initial temporary password is in **`.runtime/first-login.txt`**, readable only by the Mac owner. Do not send it to chat. First sign-in requires a new password of at least 12 characters before any customer data is accessible. Delete the temporary-password file after successful setup.
+Open **http://localhost:8001**. On a fresh installation, the bootstrap username defaults to **localadmin**; existing or renamed administrator accounts are preserved. Use the assigned username for an existing installation. The initial temporary password is in **`.runtime/first-login.txt`**, readable only by the Mac owner. Do not send it to chat. First sign-in requires a new password of at least 12 characters before any customer data is accessible. Delete the temporary-password file after successful setup.
 
 The start command runs Alembic migrations, preserves existing accounts, acquires a single-process lock, serves the production frontend build and starts read-only synchronization. It does not seed demo records. The private SQLite database is `.runtime/internal.db`; `.runtime/` is excluded from Git. No API credentials are stored in that database or frontend assets. Provider recording URLs are stripped before raw payload persistence.
 
