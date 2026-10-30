@@ -267,3 +267,9 @@ Render was not suspended, but cold-start migrations failed because Neon refused 
 Prepared traffic reductions: internal pages now fetch only visible report types and no longer subscribe to the demo's five-second invalidation stream. CRM enrichment selects only changed/pending call IDs before loading full journeys, instead of reloading every unchanged projection each cycle. Caller matching fetches compact unmatched metadata instead of every full call record. Sync cadence and provider endpoints are unchanged.
 
 Validation: 110 backend tests, 20 frontend tests, production build and a synthetic Chrome request-budget test passed. Live database validation remains blocked by the provider quota. These changes are prepared for recovery; they do not restore consumed allowance. Reference: https://neon.com/docs/introduction/network-transfer
+
+### Missed-after-department subsection in LeadSquared — 30 October 2026
+
+When Call status is Missed, LeadSquared insights now displays a Missed call breakdown with All missed calls and Missed after department selection. Each choice shows its call count and filters the complete caller/CRM report before pagination, retaining dates and other filters. The main total is labelled with the active missed scope. Both breakdown counts come from the existing report response, so no extra polling request is needed. The optional department checkbox remains available for other call statuses.
+
+Validation: 111 backend tests, 20 frontend tests, production build and a Chrome subsection test passed. Cases cover missed calls without routing, answered-call exclusion, stable total/subset counts, filtered caller/lead details, pagination and empty selections. This update targets the Mac server while the cloud database remains quota-blocked.

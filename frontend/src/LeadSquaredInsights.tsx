@@ -7,7 +7,7 @@ import type { Agent } from './types';
 
 type Candidate={id:string;display_name:string;created_at:string|null;current_stage:string;current_owner_name?:string|null;relationship:string};
 type Row={key:string;caller:string|null;call_count:number;call_ids:string[];departments:string[];statuses:string[];first_call_at:string|null;last_call_at:string|null;match_status:string;candidates:Candidate[]};
-type Report={ranking_items:Agent[];summary:Record<string,number>;items:Row[];total:number;next_page:number|null};
+type Report={selection_counts:{all_calls:number;department_calls:number};ranking_items:Agent[];summary:Record<string,number>;items:Row[];total:number;next_page:number|null};
 export function LeadSquaredInsights({onOpen}:{onOpen:(id:string)=>void}){
   const size=usePageSize();
   const [params,setParams]=useSearchParams();const page=Number(params.get('page')||1);
@@ -17,6 +17,8 @@ export function LeadSquaredInsights({onOpen}:{onOpen:(id:string)=>void}){
   const selected=params.get('department_selected')==='true';filter.set('department_selected',String(selected));
   const query=useQuery({queryKey:['ls-analytics',filter.toString(),page,size],queryFn:()=>api<Report>(`/reports/leadsquared?${filter}&page=${page}&${pageSizeQuery(size)}`),refetchInterval:30000});
   const summary=query.data?.summary;
+  const missed=filter.get('outcome')==='MISSED';
+  function missedScope(departmentOnly:boolean){const next=new URLSearchParams(params);next.set('outcome','MISSED');next.set('department_selected',String(departmentOnly));next.delete('page');setParams(next);}
   function updatePage(value:number){const next=new URLSearchParams(params);next.set('page',String(value));setParams(next);}
   function leadStatus(row:Row){return row.candidates.length?'Lead found':row.match_status==='NO_MATCH'?'Not found in last check':'Checking LeadSquared';}
   return <>
@@ -24,13 +26,14 @@ export function LeadSquaredInsights({onOpen}:{onOpen:(id:string)=>void}){
       <h2>Did our callers become leads?</h2>
       <p className="muted">Each phone number counts as one caller, even when they call more than once.</p>
       <div className="button-row">
-        <label className="crm-scope-toggle"><input type="checkbox" checked={selected} onChange={e=>{const next=new URLSearchParams(params);next.set('department_selected',String(e.target.checked));next.delete('page');setParams(next);}}/>Only callers who reached a department</label>
+        {!missed&&<label className="crm-scope-toggle"><input type="checkbox" checked={selected} onChange={e=>{const next=new URLSearchParams(params);next.set('department_selected',String(e.target.checked));next.delete('page');setParams(next);}}/>Only callers who reached a department</label>}
         {(filter.get('outcome')!=='ANSWERED')&&<button className="secondary" onClick={()=>{const next=new URLSearchParams(params);next.set('outcome','ANSWERED');next.delete('page');setParams(next);}}>Show answered calls</button>}
       </div>
     </section>
     {query.error&&<div className="notice error" role="alert">{query.error.message}</div>}
     {query.isPending?<p className="loading">Loading callers…</p>:summary&&<>
-      <div className="kpi-grid crm-summary">{[[filter.get('outcome')==='ANSWERED'?(selected?'Answered department calls':'Answered calls'):(selected?'Department calls':'Calls'),'total_calls'],['Unique callers','unique_callers'],['Found in LeadSquared','matched_callers'],['Not found in last check','no_match_callers'],['Still being checked','unresolved_callers'],['Repeat calls','repeat_calls']].map(([title,key])=><section className="panel kpi" key={key}><div className="kpi-top">{title}</div><strong>{summary[key]}</strong></section>)}</div>
+      {missed&&<section className="panel crm-missed-scope" aria-label="Missed call breakdown"><h2>Missed call breakdown</h2><div className="crm-missed-options"><button aria-pressed={!selected} onClick={()=>missedScope(false)}><span>All missed calls</span><strong>{query.data?.selection_counts?.all_calls??'…'}</strong></button><button aria-pressed={selected} onClick={()=>missedScope(true)}><span>Missed after department selection</span><strong>{query.data?.selection_counts?.department_calls??'…'}</strong></button></div></section>}
+      <div className="kpi-grid crm-summary">{[[missed?(selected?'Missed after department selection':'Missed calls'):filter.get('outcome')==='ANSWERED'?(selected?'Answered department calls':'Answered calls'):(selected?'Department calls':'Calls'),'total_calls'],['Unique callers','unique_callers'],['Found in LeadSquared','matched_callers'],['Not found in last check','no_match_callers'],['Still being checked','unresolved_callers'],['Repeat calls','repeat_calls']].map(([title,key])=><section className="panel kpi" key={key}><div className="kpi-top">{title}</div><strong>{summary[key]}</strong></section>)}</div>
       <div className="crm-statline"><span>Already a lead before calling <strong>{summary.existing_before_call}</strong></span><span>Lead created after calling <strong>{summary.created_after_call}</strong></span></div>
       {summary.unresolved_callers>0&&<p className="muted" role="status">We’re checking {summary.unresolved_callers} callers. Their leads may already exist. Results update automatically.</p>}
       <AgentRanking agents={query.data?.ranking_items} rankingAgents={query.data?.ranking_items} rankingsOnly/>

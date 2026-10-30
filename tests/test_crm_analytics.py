@@ -116,3 +116,20 @@ def test_owner_id_resolves_to_name_without_changing_stored_id(internal):
     candidate=response.json()['items'][0]['candidates'][0]
     assert candidate['current_owner_name']=='Verified Owner Name'
     assert candidate['current_owner']==owner
+
+
+def test_missed_department_subsection_keeps_total_counts_and_filters_leads(internal):
+    with internal.app.state.sessions.begin() as db:
+        add(db,'selected-miss',status='missed',leads=[lead()])
+        add(db,'ivr-miss',phone='+12025550102',status='missed',department=False,leads=[])
+        add(db,'answered',status='answered',leads=[])
+    sign_in(internal,'viewer','viewer-password-123')
+    all_missed=internal.get('/api/v1/reports/leadsquared?outcome=MISSED&department_selected=false').json()
+    assert all_missed['selection_counts']=={'all_calls':2,'department_calls':1}
+    assert all_missed['summary']['total_calls']==2
+    scoped=internal.get('/api/v1/reports/leadsquared?outcome=MISSED&department_selected=true&page_size=1').json()
+    assert scoped['selection_counts']==all_missed['selection_counts']
+    assert scoped['summary']['total_calls']==1 and scoped['summary']['matched_callers']==1
+    assert scoped['items'][0]['statuses']==['MISSED']
+    empty=internal.get('/api/v1/reports/leadsquared?outcome=MISSED&department_selected=false&start=2030-01-01T00:00:00Z').json()
+    assert empty['selection_counts']=={'all_calls':0,'department_calls':0}

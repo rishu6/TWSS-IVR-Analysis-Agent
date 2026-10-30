@@ -71,11 +71,13 @@ def leadsquared_analytics(f=Depends(filters),department_selected:bool=True,
     from .crm_analytics import analytics
     f={**f,'direction':f['direction'] or 'inbound'}
     calls=db.scalars(filtered_query(**f)).all()
-    if department_selected:calls=[c for c in calls if has_department_flow(c.projection)]
+    department_calls=[c for c in calls if has_department_flow(c.projection)]
+    selection_counts={'all_calls':len(calls),'department_calls':len(department_calls)}
+    if department_selected:calls=department_calls
     summary,items=analytics(db,calls,user.role,False)
     ranking_items=agent_report(exclude_department_calls(calls,'Support'))
     start=0 if show_all else (page-1)*page_size
-    return {'summary':summary,'items':items if show_all else items[start:start+page_size],'total':len(items),'ranking_items':ranking_items,
+    return {'selection_counts':selection_counts,'summary':summary,'items':items if show_all else items[start:start+page_size],'total':len(items),'ranking_items':ranking_items,
             'next_page':page+1 if not show_all and start+page_size<len(items) else None,
             'scope':'Saved default LeadSquared lead-type index; phone matches only. Call activity logging and historical lead stages are not verified.'}
 
