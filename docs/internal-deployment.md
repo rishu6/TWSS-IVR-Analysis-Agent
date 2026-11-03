@@ -63,3 +63,7 @@ Open **http://localhost:8001/flows** or use the Detailed Call Flow sidebar item.
 The calendar controls filter already-stored records. Admin/Manager can additionally choose **Import selected dates from Acefone** to fetch missing dates within the last 90 days. Imported calendar days use Asia/Kolkata boundaries, with the current day clamped to request time. Each page and direction checkpoint is saved. Queued/running/completed/failed states and processed/rejected counts are visible; failed jobs can be resumed. Empty filtered results do not assert that the provider had no calls.
 
 An initial 30-calendar-day import completed with 1,727 unique calls and zero rejected records. Coverage expands only after successful import. Records older than the supported live window require a separately verified archive import; no undocumented archive API is used.
+
+## Temporarily pause LeadSquared fetching
+
+Set `LEADSQUARED_SYNC_PAUSED=true` in the private `.env.integrations` file and restart the app after installing the pause support. Subsequent cycles re-read this setting. This pauses lead indexing, owner-directory refresh and caller phone lookups, while retaining saved CRM data and continuing Acefone imports. Set it to `false` to resume; existing scan checkpoints are preserved. Cloud installations use the same environment variable and require the updated code to be deployed.

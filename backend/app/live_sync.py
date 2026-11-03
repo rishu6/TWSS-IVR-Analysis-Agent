@@ -1,4 +1,5 @@
 import threading
+import os
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -57,12 +58,20 @@ class LiveSync:
             if status in ('HEALTHY','PARTIAL'): row.last_success_at=now()
             if details is not None: row.details=details
 
+    def crm_paused(self, credentials):
+        value = credentials.get('LEADSQUARED_SYNC_PAUSED', os.getenv('LEADSQUARED_SYNC_PAUSED', 'false'))
+        if str(value).lower() != 'true':
+            return False
+        self.state('leadsquared', 'PAUSED', 'LeadSquared fetching temporarily paused; saved data retained')
+        return True
+
     def run(self):
         if not self.lock.acquire(blocking=False):
             return {'status':'ALREADY_RUNNING'}
         try:
             credentials = load_credentials(self.settings.integrations_file)
-            if not self.separate_crm:
+            paused = self.crm_paused(credentials)
+            if not self.separate_crm and not paused:
                 from .owner_directory import refresh_owner_directory
                 refresh_owner_directory(self.sessions,credentials,client_factory=LiveLeadSquaredClient)
             from .history import process_history
@@ -73,7 +82,7 @@ class LiveSync:
                 self.enrich_calls(bool(last),last)
             else:
                 self.telephony(credentials)
-                if not self.separate_crm:
+                if not self.separate_crm and not paused:
                     self.crm(credentials)
             from .maintenance import maintain
             maintain(self.settings,self.sessions)
@@ -92,6 +101,7 @@ class LiveSync:
             return {'status':'ALREADY_RUNNING'}
         try:
             credentials=load_credentials(self.settings.integrations_file)
+            if self.crm_paused(credentials):return {'status':'PAUSED'}
             from .owner_directory import refresh_owner_directory
             refresh_owner_directory(self.sessions,credentials,client_factory=LiveLeadSquaredClient)
             self.crm(credentials)
@@ -108,6 +118,7 @@ class LiveSync:
         client=None
         try:
             credentials=load_credentials(self.settings.integrations_file)
+            if self.crm_paused(credentials):return {'status':'PAUSED'}
             client=LiveLeadSquaredClient(credentials)
             from .reports import has_department_flow
             with self.sessions() as db:
@@ -213,6 +224,7 @@ class LiveSync:
         finally: client.close()
 
     def crm(self, credentials):
+        if self.crm_paused(credentials):return
         with self.sessions() as db:
             previous=db.get(IntegrationState,'leadsquared')
             last_success=previous.last_success_at.replace(tzinfo=UTC) if previous and previous.last_success_at else None
